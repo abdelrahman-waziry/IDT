@@ -1,0 +1,72 @@
+// ============================================
+// iOS Device Manager - Main SCSS Entry
+// 7-1 Architecture
+// ============================================
+
+// 1. Abstracts - Variables, Mixins, Functions
+@use 'abstracts' as *;
+
+// 2. Vendors - Third-party styles
+@use 'vendors';
+
+// 3. Base - Reset, Typography, Base elements
+@use 'base';
+
+// 4. Layout - Header, Footer, Grid, Status Bar
+@use 'layout';
+
+// 5. Components - Buttons, Cards, Badges, Toasts, etc.
+@use 'components';
+
+// 6. Pages - Page-specific styles
+@use 'pages';
+
+// 7. Themes - Theme overrides
+@use 'themes';
+
+// ============================================
+// Responsive Overrides
+// ============================================
+
+@media (max-width: 768px) {
+    .app-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+
+    .header-left {
+        flex-direction: column;
+    }
+
+    .status-bar {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .device-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .main-content {
+        padding: var(--spacing-md);
+    }
+
+    .toast-container {
+        left: var(--spacing-md);
+        right: var(--spacing-md);
+    }
+
+    .toast {
+        min-width: auto;
+        max-width: none;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .component-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

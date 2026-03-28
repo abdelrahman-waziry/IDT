@@ -1,0 +1,101 @@
+// ============================================
+// Mixins
+// ============================================
+
+// --- Responsive Breakpoints ---
+@mixin respond-to($breakpoint) {
+    @if $breakpoint =='sm' {
+        @media (max-width: $breakpoint-sm) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint =='md' {
+        @media (max-width: $breakpoint-md) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint =='lg' {
+        @media (max-width: $breakpoint-lg) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint =='xl' {
+        @media (max-width: $breakpoint-xl) {
+            @content;
+        }
+    }
+}
+
+// --- Flexbox ---
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+// --- Card ---
+@mixin card-base {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+@mixin card-hover {
+    &:hover {
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+// --- Truncate ---
+@mixin text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// --- Glass Effect ---
+@mixin glassmorphism($opacity: 0.1) {
+    background: rgba(255, 255, 255, $opacity);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, $opacity + 0.05);
+}
+
+// --- Scrollbar ---
+@mixin custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--color-bg-primary);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-bg-tertiary);
+        border-radius: var(--radius-full);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-accent);
+    }
+}

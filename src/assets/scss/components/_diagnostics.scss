@@ -1,0 +1,62 @@
+// ============================================
+// Hardware Diagnostics Panel
+// ============================================
+@use '../abstracts/mixins' as *;
+
+.hardware-diagnostics {
+    margin-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-md);
+}
+
+.diagnostics-header {
+    @include flex-between;
+    cursor: pointer;
+    padding: var(--spacing-xs) 0;
+}
+
+.diagnostics-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.diagnostics-content {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-bg-hover);
+    border-radius: var(--radius-sm);
+    animation: fadeIn 0.2s ease;
+}
+
+.diagnostics-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) 0;
+}
+
+.diagnostics-data .detail-row {
+    background: transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.diagnostics-status {
+    @include flex-between;
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.status-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.diagnostics-error {
+    padding: var(--spacing-sm);
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+}

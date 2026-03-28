@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'">
+    <title>iOS Device Manager</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+
+<body>
+    <!-- Vue App Mount Point -->
+    <div id="app"></div>
+
+    <!-- SDK (device API wrapper) -->
+    <script src="sdk.js"></script>
+
+    <!-- Vue 3 Runtime -->
+    <script src="../node_modules/vue/dist/vue.global.prod.js"></script>
+
+    <!-- Components -->
+    <script src="components/ToastContainer.js"></script>
+    <script src="components/AppHeader.js"></script>
+    <script src="components/StatusBar.js"></script>
+    <script src="components/LoadingOverlay.js"></script>
+    <script src="components/EmptyState.js"></script>
+    <script src="components/DeviceCard.js"></script>
+
+    <!-- Views -->
+    <script src="views/Splash.js"></script>
+    <script src="views/HomeView.js"></script>
+    <script src="views/DeviceDetailView.js"></script>
+
+    <!-- Main App (must be last) -->
+    <script src="app.js"></script>
+</body>
+
+</html>

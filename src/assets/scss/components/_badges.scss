@@ -1,0 +1,84 @@
+// ============================================
+// Badges & Status Indicators
+// ============================================
+
+.device-status-badge {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-activated {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.badge-locked,
+.badge-error {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.badge-unknown {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+}
+
+// Health Badge (battery)
+.health-badge {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+
+    &.good {
+        background: var(--color-success-bg);
+        color: var(--color-success);
+    }
+
+    &.fair {
+        background: var(--color-warning-bg);
+        color: var(--color-warning);
+    }
+
+    &.poor {
+        background: var(--color-danger-bg);
+        color: var(--color-danger);
+    }
+}
+
+// Status Values
+.status-value {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.status-good {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.status-fair {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+}
+
+.status-poor {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.status-unknown {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-muted);
+}
+
+.status-error {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}

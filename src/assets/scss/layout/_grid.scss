@@ -1,0 +1,26 @@
+// ============================================
+// Grid Layouts
+// ============================================
+
+// Device list grid
+.device-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+// Info data grid (device detail sections)
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
+
+// Hardware component grid
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
