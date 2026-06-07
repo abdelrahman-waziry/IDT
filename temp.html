@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fixtech Egypt - Cosmetic Grading Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed": "#e9ddff",
+                        "background": "#f8f9fa",
+                        "tertiary": "#3a4868",
+                        "tertiary-fixed-dim": "#b8c6ed",
+                        "on-secondary-container": "#006e6f",
+                        "on-background": "#191c1d",
+                        "inverse-primary": "#cfbcff",
+                        "on-primary-fixed": "#22005c",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-container": "#cfdbff",
+                        "surface-container-low": "#f3f4f5",
+                        "outline": "#7b7488",
+                        "on-surface-variant": "#4a4457",
+                        "primary-container": "#711fff",
+                        "on-secondary-fixed": "#002020",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary": "#00696a",
+                        "outline-variant": "#cbc3da",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "secondary-fixed": "#47f9fb",
+                        "on-tertiary-fixed-variant": "#394666",
+                        "on-primary-container": "#e2d5ff",
+                        "inverse-surface": "#2e3132",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#d9e2ff",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-fixed-dim": "#00dcde",
+                        "primary-fixed-dim": "#cfbcff",
+                        "tertiary-container": "#526081",
+                        "surface-bright": "#f8f9fa",
+                        "surface-dim": "#d9dadb",
+                        "surface-tint": "#6f1afd",
+                        "on-surface": "#191c1d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#42f6f8",
+                        "primary": "#5700d0",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#0b1b38",
+                        "on-secondary-fixed-variant": "#004f50",
+                        "on-primary-fixed-variant": "#5500cb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .diagnostic-gradient {
+            background: linear-gradient(135deg, #711FFF 0%, #01DFE1 100%);
+        }
+        .session-chrome {
+            background-color: #0F1E3C;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased overflow-hidden h-screen flex flex-col">
+<!-- TopAppBar Shared Component -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 h-[56px] session-chrome shadow-2xl shadow-black/20">
+<div class="flex items-center gap-4">
+<span class="text-lg font-extrabold text-white tracking-tight uppercase">Fixtech Egypt</span>
+<div class="h-4 w-px bg-white/20"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-white/40 text-sm">timer</span>
+<span class="font-mono text-xs text-white/40 font-medium">00:12:45</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-white/40 font-medium hover:bg-white/10 hover:text-white transition-colors px-3 py-1 rounded-lg text-sm active:scale-95 active:duration-75">
+                Cancel Session
+            </button>
+<span class="material-symbols-outlined text-white/40 cursor-pointer hover:text-white transition-colors">info</span>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 mt-[56px] mb-20 flex overflow-hidden">
+<!-- Left Panel: Diagnostics & Grading -->
+<aside class="w-[400px] flex-shrink-0 bg-surface-container-low flex flex-col overflow-y-auto">
+<div class="p-8 flex flex-col gap-8">
+<!-- Grade Summary Card -->
+<section class="flex flex-col items-center gap-4">
+<div class="w-20 h-20 diagnostic-gradient rounded-xl flex items-center justify-center shadow-[0_4px_20px_rgba(113,31,255,0.3)]">
+<span class="text-white text-4xl font-headline font-extrabold">B</span>
+</div>
+<div class="text-center">
+<p class="font-mono text-secondary text-sm font-semibold tracking-tighter uppercase">Confidence: 91%</p>
+<p class="text-on-surface-variant text-xs mt-1">AI Diagnostic Calculation</p>
+</div>
+</section>
+<!-- Surface Breakdown -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline font-bold text-xs uppercase tracking-widest text-on-surface-variant px-1">Surface Breakdown</h3>
+<div class="flex flex-col gap-2">
+<!-- Front Glass Row -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<span class="font-headline font-semibold text-sm">Front Glass</span>
+<div class="flex items-center gap-3">
+<span class="font-mono text-xs text-on-surface-variant opacity-60">AI:</span>
+<span class="font-mono font-bold text-primary">B+</span>
+</div>
+</div>
+<!-- Back Panel Row -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<span class="font-headline font-semibold text-sm">Back Panel</span>
+<div class="flex items-center gap-3">
+<span class="font-mono text-xs text-on-surface-variant opacity-60">AI:</span>
+<span class="font-mono font-bold text-primary">B</span>
+</div>
+</div>
+<!-- Frame/Edges Row -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<span class="font-headline font-semibold text-sm">Frame/Edges</span>
+<div class="flex items-center gap-3">
+<span class="font-mono text-xs text-on-surface-variant opacity-60">AI:</span>
+<span class="font-mono font-bold text-error">C+</span>
+</div>
+</div>
+<!-- Camera Lens Row -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<span class="font-headline font-semibold text-sm">Camera Lens</span>
+<div class="flex items-center gap-3">
+<span class="font-mono text-xs text-on-surface-variant opacity-60">AI:</span>
+<span class="font-mono font-bold text-secondary">A</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Operator Override -->
+<section class="bg-white rounded-xl p-5 shadow-[0_10px_40px_rgba(15,30,60,0.06)] mt-auto">
+<h4 class="font-headline font-bold text-sm mb-4">Operator Override</h4>
+<div class="grid grid-cols-4 gap-2">
+<button class="h-12 border border-outline-variant rounded-lg font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-colors">A</button>
+<button class="h-12 bg-primary text-white rounded-lg font-mono font-bold shadow-[0_4px_12px_rgba(113,31,255,0.3)]">B</button>
+<button class="h-12 border border-outline-variant rounded-lg font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-colors">C</button>
+<button class="h-12 border border-outline-variant rounded-lg font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-colors">D</button>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-4 leading-relaxed italic">
+                        Manual selection will override AI pricing logic for this session.
+                    </p>
+</section>
+</div>
+</aside>
+<!-- Right Panel: Review & Action -->
+<div class="flex-1 overflow-y-auto bg-surface-bright relative">
+<div class="max-w-3xl mx-auto p-12">
+<div class="mb-10">
+<h2 class="text-4xl font-headline font-extrabold tracking-tight text-on-background">Cosmetic Grade Review</h2>
+<p class="text-on-surface-variant mt-2">Validate machine assessment and provide operational context.</p>
+</div>
+<!-- AI Insights Bento Section -->
+<div class="grid grid-cols-1 gap-8">
+<!-- Notes Card -->
+<div class="bg-[#EDE9FE] border border-[#C4B5FD] rounded-2xl p-8 flex gap-6 items-start">
+<div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[#711FFF]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="space-y-3">
+<h4 class="font-headline font-bold text-lg text-primary">AI Diagnostic Notes</h4>
+<p class="text-primary/80 leading-relaxed text-sm">
+                                Detected micro-abrasions on the lower frame quadrant near the charging port. Surface reflectivity indicates authentic original glass with minor oleophobic coating wear. Recommendation: Grade B.
+                            </p>
+</div>
+</div>
+<!-- Operator Notes Area -->
+<div class="flex flex-col gap-3">
+<label class="font-headline font-semibold text-sm text-on-surface flex items-center gap-2">
+                            Session Remarks
+                            <span class="text-[10px] font-mono text-outline uppercase tracking-wider">(Optional)</span>
+</label>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-xl p-6 min-h-[160px] focus:ring-2 focus:ring-primary/10 font-body text-on-surface placeholder:text-outline/50 shadow-inner" placeholder="Add internal notes about cosmetic defects, lens clarity, or button tactile feel..."></textarea>
+</div>
+<!-- Action Footer -->
+<div class="pt-8 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="Portrait of a technician in a sterile white lab environment with high-tech equipment background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHsveANuSvhDODnDQU3yJL-rk8HbRsYIMbEHE2T2n0Hsa_g9HyadrxzTlPXpWQODCsOUtnW-fpTxX8XQOGmxec8b490zx8htaFOwORibkvZz3zM5i6Itra3c7yoQrur6SLxTv5dAhPITfZaKJ4n0j8OXOGf8NdJL-wReB27nSTNGbBkPHIcKaXzSjfHiwksPJXR1D_CCDjzNV7vMcIKZqH0QgMW3BmyriatdJoq8oUs3KHMIm_UQ0sd7q_2YZepLip_k2fRRNj9UM"/>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Assigned Tech</span>
+<span class="text-sm font-mono">STATION_42_DX</span>
+</div>
+</div>
+<button class="bg-primary hover:bg-[#711FFF] text-white px-8 py-4 rounded-xl font-headline font-bold flex items-center gap-4 transition-all hover:translate-y-[-2px] shadow-[0_4px_20px_rgba(113,31,255,0.3)]">
+                            Confirm Grade B → Calculate Pricing
+                            <span class="material-symbols-outlined">payments</span>
+</button>
+</div>
+</div>
+<!-- Visual Reference Grid -->
+<div class="mt-16 grid grid-cols-3 gap-4">
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" data-alt="Macro close-up of a brushed metal phone frame with slight scratches near the antenna line, professional clinical lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7Gk0G7ccd4UW_lPhUEXWBFIOUcQ6WAOVNjjmCSes_V-jiShmoBZtPUWEqOCpfjBXn9VajaR2GObtByNmDywiDz0y1FyZTEUPqyDGyQFzxDhTX10DkbyR87BvCLvIfCkdjBzP6ibbi9t1E1Qk_BqTFTxX8nPQQ0xP-wz0OZI23MSXQyFhfEP1iXbiseCetSsd2nVHVsfv8raw5cU4EOqKA9gYPuJsv9mbuWupcq_h8huLbDZ0z2QNOVkBlSgripit840gxzz5Ys9U"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" data-alt="Macro close-up of a smartphone screen showing micro-scratches under a ultraviolet inspection lamp" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHYwVoSHIh7ippMpHg_17AAB1B-to7tvTPOMa5_2jhxZU0UKzi1ZbsWTVu-Qz8DT8FHRloZ3E2HthQsrubP1VBtvCtkaJGEvW0tu-WH3Q_3porqxu5AvGZmHXtU3-v5CmRe2HLo0cuGt1di3DomRCYnxwxvoksqkrmecJHBoId6fuGP8CyLEJzA06BuPQgQMexI-tYRSBtBbjHuankR1cyc3p0EP90Qu5_6AM0Jd80JVGYTVYSONuipJh_S0XVFXz8-nZYj3Z5Sb8"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover grayscale transition-all group-hover:grayscale-0" data-alt="Close-up of a triple camera system on a smartphone, pristine condition, sharp reflections on the sapphire glass" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAjfp0xiCJZVrYQO1zCBIPiMLOOwSEH580Q7i1aptDKTjXdWGRM_CKWI0R5hZlnqH83RhXbHw8G4ckjlwil_61ctLeIZJDZvuKPfjZ7P28ug8LnLy5CqiJ5HVGfRv8l9PvXZG2pbyT9G84F7nng9Ru8qXpKF7jZdml4uvUppEBK4Z-z_-tevEmgBPvqmj7BVLyMo-iqA9cgnMFTe5GFCJFNRw2r5QC021XjJ3Qx7PFZYDIpWIksae1RPmjhaJdIu5YFY8vqA0J65g"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-4 pb-safe bg-white/80 dark:bg-[#0F1E3C]/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl">
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-transform duration-300">
+<span class="material-symbols-outlined">verified</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Authenticity</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-transform duration-300">
+<span class="material-symbols-outlined">memory</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Hardware</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#711FFF] dark:text-[#01DFE1] scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">potted_plant</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Cosmetic</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-transform duration-300">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Pricing</span>
+</div>
+</nav>
+</body></html>

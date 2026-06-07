@@ -18,7 +18,7 @@ let mainWindow = null;
 let deviceScanner = null;
 
 // Lazy load modules to ensure they're loaded after app is ready
-let DeviceScanner, DeviceManager, ReportGenerator, HardwareDiagnostics, APIService;
+let DeviceScanner, DeviceManager, ReportGenerator, HardwareDiagnostics, APIService, AuthenticityService, CosmeticServer, CosmeticGrader;
 
 /**
  * Creates the main application window
@@ -64,7 +64,11 @@ function createWindow() {
 function initializeDeviceScanning() {
     deviceScanner = new DeviceScanner();
 
-    deviceScanner.on('change', async () => {
+    deviceScanner.on('change', async (eventData) => {
+        const cosmeticActive = CosmeticServer.isSessionActive && CosmeticServer.isSessionActive();
+        if (cosmeticActive && eventData && eventData.type === 'remove') {
+            console.log('[Main] Device removed during active cosmetic session — server stays alive');
+        }
         console.log('[Main] Device change detected, refreshing device list...');
         await refreshDeviceList();
     });
@@ -217,6 +221,95 @@ function registerIPCHandlers() {
             return { success: false, error: error.message };
         }
     });
+
+    /**
+     * Check hardware authenticity for a device
+     */
+    ipcMain.handle('check-authenticity', async (event, uuid) => {
+        try {
+            console.log('[Main] Checking authenticity for device:', uuid);
+            const result = await AuthenticityService.checkAuthenticity(uuid);
+            return { success: true, data: result };
+        } catch (error) {
+            console.error('[Main] Authenticity check error:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    // ============================================
+    // Cosmetic Photo Session
+    // ============================================
+
+    ipcMain.handle('start-cosmetic-session', async (event, sessionId) => {
+        try {
+            console.log('[Main] Starting cosmetic session for:', sessionId);
+            const result = await CosmeticServer.startServer(sessionId, (photoData) => {
+                // Forward photo upload event to renderer
+                sendToRenderer('cosmetic-photo-uploaded', photoData);
+            });
+            return { success: true, ...result };
+        } catch (error) {
+            console.error('[Main] Cosmetic session error:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('stop-cosmetic-session', async () => {
+        try {
+            await CosmeticServer.stopServer();
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('grade-cosmetic-photos', async (event, sessionId) => {
+        try {
+            console.log('[Main] Grading cosmetic photos for:', sessionId);
+
+            // Get local file paths
+            const photos = CosmeticServer.getSessionPhotos(sessionId);
+
+            // Map to local file URLs (file://) so they persist after HTTP server stops
+            const photoUrls = {};
+            for (const [view, filePath] of Object.entries(photos)) {
+                photoUrls[view] = `file:///${filePath.replace(/\\/g, '/')}`;
+            }
+
+            const apiKey = process.env.OPENROUTER_API_KEY || '';
+            const report = await CosmeticGrader.gradePhotos(photos, apiKey);
+
+            // Attach the photo URLs in the requested format
+            report.photos = photoUrls;
+
+            return { success: true, data: report };
+        } catch (error) {
+            console.error('[Main] Cosmetic grading error:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('cleanup-cosmetic-photos', async (event, sessionId) => {
+        try {
+            console.log('[Main] Cleaning up cosmetic photos for:', sessionId);
+            CosmeticServer.cleanupSessionPhotos(sessionId);
+            return { success: true };
+        } catch (error) {
+            console.error('[Main] Photo cleanup error:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('get-cosmetic-status', async () => {
+        try {
+            return {
+                success: true,
+                active: CosmeticServer.isSessionActive ? CosmeticServer.isSessionActive() : false
+            };
+        } catch (error) {
+            return { success: false, active: false };
+        }
+    });
 }
 
 // ============================================
@@ -230,6 +323,9 @@ app.whenReady().then(() => {
     ReportGenerator = require('./engine/report-generator');
     HardwareDiagnostics = require('./engine/hardware-diagnostics');
     APIService = require('./engine/api-service');
+    AuthenticityService = require('./engine/authenticity-service');
+    CosmeticServer = require('./engine/cosmetic-server');
+    CosmeticGrader = require('./engine/cosmetic-grader');
 
     // Register IPC handlers
     registerIPCHandlers();

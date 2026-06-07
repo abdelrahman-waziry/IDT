@@ -5,9 +5,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'">
-    <title>iOS Device Manager</title>
+        content="default-src 'self' https:; img-src 'self' data: http: https:; connect-src 'self' http: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.tailwindcss.com">
+    <title>CoreInspect – Operator Command Center</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+
+    <!-- Tailwind CSS (for Stitch Design) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        corePlugins: { preflight: false }, // Prevent breaking existing SCSS
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "surface-bright": "#f8f9fa",
+              "secondary-fixed": "#47f9fb",
+              "primary": "#5700d0",
+              "on-primary-fixed-variant": "#5500cb",
+              "surface": "#f8f9fa",
+              "inverse-primary": "#cfbcff",
+              "on-primary": "#ffffff",
+              "on-surface-variant": "#4a4457",
+              "tertiary-fixed": "#d9e2ff",
+              "inverse-on-surface": "#f0f1f2",
+              "error": "#ba1a1a",
+              "surface-container-low": "#f3f4f5",
+              "primary-container": "#711fff",
+              "primary-fixed-dim": "#cfbcff",
+              "primary-fixed": "#e9ddff",
+              "secondary-container": "#42f6f8",
+              "outline-variant": "#cbc3da",
+              "surface-container-high": "#e7e8e9",
+              "on-primary-fixed": "#22005c",
+              "error-container": "#ffdad6",
+              "on-primary-container": "#e2d5ff",
+              "on-background": "#191c1d",
+              "on-secondary": "#ffffff",
+              "on-error-container": "#93000a",
+              "surface-tint": "#6f1afd",
+              "on-surface": "#191c1d",
+              "outline": "#7b7488",
+              "secondary-fixed-dim": "#00dcde",
+              "secondary": "#00696a",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed": "#0b1b38",
+              "on-tertiary-container": "#cfdbff",
+              "inverse-surface": "#2e3132",
+              "surface-variant": "#e1e3e4",
+              "surface-dim": "#d9dadb",
+              "on-tertiary-fixed-variant": "#394666",
+              "tertiary-container": "#526081",
+              "on-secondary-fixed": "#002020",
+              "surface-container-highest": "#e1e3e4",
+              "on-secondary-fixed-variant": "#004f50",
+              "surface-container": "#edeeef",
+              "background": "#f8f9fa",
+              "on-secondary-container": "#006e6f",
+              "on-tertiary": "#ffffff",
+              "tertiary": "#3a4868",
+              "tertiary-fixed-dim": "#b8c6ed"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "technical": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+    <style>
+        .technical-font { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .cyan-glow {
+            filter: drop-shadow(0px 0px 8px rgba(1, 223, 225, 0.4));
+        }
+        .primary-glow {
+            box-shadow: 0px 4px 20px rgba(113, 31, 255, 0.3);
+        }
+    </style>
 </head>
 
 <body>
@@ -20,9 +104,19 @@
     <!-- Vue 3 Runtime -->
     <script src="../node_modules/vue/dist/vue.global.prod.js"></script>
 
+    <!-- Composables -->
+    <script src="composables/useAuthenticity.js"></script>
+    <script src="composables/useHardwareTest.js"></script>
+    <script src="composables/useCosmetic.js"></script>
+
+    <!-- Services & Persistence -->
+    <script src="services/DatabaseService.js"></script>
+    <script src="composables/useSession.js"></script>
+
     <!-- Components -->
     <script src="components/ToastContainer.js"></script>
     <script src="components/AppHeader.js"></script>
+    <script src="components/Sidebar.js"></script>
     <script src="components/StatusBar.js"></script>
     <script src="components/LoadingOverlay.js"></script>
     <script src="components/EmptyState.js"></script>
@@ -31,7 +125,11 @@
     <!-- Views -->
     <script src="views/Splash.js"></script>
     <script src="views/HomeView.js"></script>
-    <script src="views/DeviceDetailView.js"></script>
+    <script src="views/AuthenticityView.js"></script>
+    <script src="views/ConnectDeviceView.js"></script>
+    <script src="views/HardwareTestView.js"></script>
+    <script src="views/CosmeticView.js"></script>
+    <script src="views/PricingView.js"></script>
 
     <!-- Main App (must be last) -->
     <script src="app.js"></script>

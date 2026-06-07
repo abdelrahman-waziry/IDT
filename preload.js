@@ -55,6 +55,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getIMEIInfo: (imei) => ipcRenderer.invoke('get-imei-info', imei),
 
     // ============================================
+    // Authenticity Verification
+    // ============================================
+
+    /**
+     * Check hardware authenticity for a device
+     * Detects non-genuine parts (battery, display, camera) by parsing
+     * the com.apple.mobile.itunes lockdown domain and performing
+     * deep IORegistry verification.
+     * @param {string} uuid - The device UUID
+     * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+     */
+    checkAuthenticity: (uuid) => ipcRenderer.invoke('check-authenticity', uuid),
+
+    // ============================================
     // Report Generation
     // ============================================
 
@@ -100,6 +114,68 @@ contextBridge.exposeInMainWorld('electronAPI', {
         const subscription = (event, error) => callback(error);
         ipcRenderer.on('device-error', subscription);
         return () => ipcRenderer.removeListener('device-error', subscription);
+    },
+
+    // ============================================
+    // Cosmetic Photo Session
+    // ============================================
+
+    /**
+     * Start the cosmetic capture server
+     * @param {string} sessionId - The device UUID / session identifier
+     * @returns {Promise<{success: boolean, url?: string, port?: number, qrDataUrl?: string}>}
+     */
+    startCosmeticSession: (sessionId) => ipcRenderer.invoke('start-cosmetic-session', sessionId),
+
+    /**
+     * Stop the cosmetic capture server
+     * @returns {Promise<{success: boolean}>}
+     */
+    stopCosmeticSession: () => ipcRenderer.invoke('stop-cosmetic-session'),
+
+    /**
+     * Grade cosmetic photos via Claude Sonnet AI
+     * @param {string} sessionId - The session identifier
+     * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+     */
+    gradeCosmeticPhotos: (sessionId) => ipcRenderer.invoke('grade-cosmetic-photos', sessionId),
+
+    /**
+     * Listen for cosmetic photo uploads
+     * @param {function} callback - Callback receiving { view, url, localPath, sessionId }
+     * @returns {function} Cleanup function to remove listener
+     */
+    onCosmeticPhotoUploaded: (callback) => {
+        const subscription = (event, data) => callback(data);
+        ipcRenderer.on('cosmetic-photo-uploaded', subscription);
+        return () => ipcRenderer.removeListener('cosmetic-photo-uploaded', subscription);
+    },
+
+    /**
+     * Clean up cosmetic photos for a completed session
+     * @param {string} sessionId - The session identifier
+     * @returns {Promise<{success: boolean}>}
+     */
+    cleanupCosmeticPhotos: (sessionId) => ipcRenderer.invoke('cleanup-cosmetic-photos', sessionId),
+
+    /**
+     * Listen for cosmetic device unplugged
+     * @param {function} callback 
+     */
+    onCosmeticDeviceUnplugged: (callback) => {
+        const subscription = (event, data) => callback(data);
+        ipcRenderer.on('cosmetic-device-unplugged', subscription);
+        return () => ipcRenderer.removeListener('cosmetic-device-unplugged', subscription);
+    },
+
+    /**
+     * Listen for cosmetic device reconnected
+     * @param {function} callback 
+     */
+    onCosmeticDeviceReconnected: (callback) => {
+        const subscription = (event, data) => callback(data);
+        ipcRenderer.on('cosmetic-device-reconnected', subscription);
+        return () => ipcRenderer.removeListener('cosmetic-device-reconnected', subscription);
     }
 });
 

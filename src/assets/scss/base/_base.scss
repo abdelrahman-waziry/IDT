@@ -18,23 +18,24 @@
     overflow-y: auto;
 }
 
-// Scrollbar
+// Scrollbar (Forced Light Theme)
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--color-bg-primary);
+    background: #f8f9fa;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--color-bg-tertiary);
+    background: #c1c1c1;
     border-radius: var(--radius-full);
+    border: 2px solid #f8f9fa;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-accent);
+    background: #a8a8a8;
 }
 
 // Animations

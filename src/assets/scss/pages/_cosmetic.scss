@@ -1,0 +1,632 @@
+// ========================================
+// Cosmetic QR Handover View
+// BEM Architecture — Fixtech Egypt
+// ========================================
+
+$_primary: #711FFF;
+$_primary-dark: #5700d0;
+$_cyan: #01DFE1;
+$_navy: #0F1E3C;
+$_surface: #F8F9FA;
+$_surface-low: #F3F4F5;
+$_surface-high: #E7E8E9;
+$_on-surface: #191C1D;
+$_on-surface-variant: #4A4457;
+$_outline: #7B7488;
+$_outline-variant: #CBC3DA;
+$_green: #22c55e;
+$_amber: #F59E0B;
+$_amber-dark: #D97706;
+$_amber-bg: #FFFBEB;
+$_amber-border: rgba(#F59E0B, 0.3);
+$_amber-text: #92400E;
+$_amber-text-light: #78350F;
+
+// ── Page Layout ──────────────────────────
+.cosmetic-page {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    margin-top: 3rem;
+    background-color: $_surface;
+    font-family: 'Inter', sans-serif;
+    color: $_on-surface;
+    overflow: hidden;
+
+    // ── Left Sidebar ─────────────────────
+    &__sidebar {
+        width: 400px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 32px;
+        background-color: $_surface-low;
+        border-right: 1px solid rgba($_outline-variant, 0.1);
+        overflow-y: auto;
+    }
+
+    &__sidebar-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        flex: 1;
+    }
+
+    // ── Sidebar Header ───────────────────
+    &__sidebar-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: $_on-surface;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    &__sidebar-description {
+        font-size: 14px;
+        color: $_on-surface-variant;
+        line-height: 1.65;
+        margin-top: 8px;
+    }
+
+    // ── Amber Alert Banner ───────────────
+    &__alert {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background-color: $_amber-bg;
+        border-radius: 12px;
+        border: 1px solid $_amber-border;
+
+        &-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: $_amber;
+            flex-shrink: 0;
+            animation: cosmeticPulseAmber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        &-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: $_amber-text;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+    }
+
+    // ── QR Container ─────────────────────
+    &__qr-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 16px;
+    }
+
+    &__qr-frame {
+        position: relative;
+        padding: 24px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba($_outline-variant, 0.2);
+    }
+
+    &__qr-code {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: $_surface-high;
+        border-radius: 4px;
+        overflow: hidden;
+
+        img,
+        canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    }
+
+    &__qr-tag {
+        position: absolute;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 16px;
+        background: $_on-surface;
+        color: #fff;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+    }
+
+    // ── Waiting Status ───────────────────
+    &__waiting {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 40px;
+
+        &-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        &-ping {
+            position: relative;
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+
+            &::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+                background: $_amber;
+                opacity: 0.75;
+                animation: cosmeticPing 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+            }
+
+            &::after {
+                content: '';
+                position: relative;
+                display: block;
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                background: $_amber-dark;
+            }
+        }
+
+        &-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: $_on-surface-variant;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        &-sublabel {
+            font-size: 11px;
+            color: $_outline;
+            text-align: center;
+        }
+    }
+
+    // ── Skip Warning Banner ──────────────
+    &__skip-banner {
+        margin-top: auto;
+        padding: 16px;
+        background-color: rgba($_amber-bg, 0.6);
+        border-radius: 16px;
+        border: 1px solid rgba($_amber, 0.25);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        &-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        &-icon {
+            color: $_amber-dark;
+            flex-shrink: 0;
+            font-size: 20px;
+        }
+
+        &-text {
+            font-size: 13px;
+            color: $_amber-text-light;
+            line-height: 1.5;
+        }
+
+        &-button {
+            width: 100%;
+            padding: 10px;
+            background: $_amber-dark;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 200ms ease;
+
+            &:hover {
+                background: darken($_amber-dark, 8%);
+            }
+
+            &:active {
+                transform: scale(0.98);
+            }
+        }
+    }
+
+    // ── Grade Button ─────────────────────
+    &__grade-button {
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, $_primary, $_primary-dark);
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 200ms ease;
+        box-shadow: 0 4px 16px rgba($_primary, 0.3);
+
+        &:hover {
+            box-shadow: 0 6px 24px rgba($_primary, 0.45);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+
+        .material-symbols-outlined {
+            font-size: 20px;
+        }
+    }
+
+    // ── Grade Result Card ────────────────
+    &__grade-result {
+        padding: 20px;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid rgba($_outline-variant, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        &-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        &-grade {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+
+        &-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: $_on-surface;
+        }
+
+        &-desc {
+            font-size: 13px;
+            color: $_on-surface-variant;
+            line-height: 1.5;
+        }
+
+        &-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: $_surface-low;
+            border-radius: 10px;
+
+            span {
+                font-size: 13px;
+                color: $_on-surface-variant;
+            }
+
+            strong {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 16px;
+                color: $_on-surface;
+            }
+        }
+    }
+
+    // ── Proceed Button ───────────────────
+    &__proceed-button {
+        width: 100%;
+        padding: 14px;
+        background: $_primary;
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 200ms ease;
+        margin-top: 4px;
+
+        &:hover {
+            background: $_primary-dark;
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+
+        .material-symbols-outlined {
+            font-size: 20px;
+        }
+    }
+
+    // ── Main Content ─────────────────────
+    &__main {
+        flex: 1;
+        padding: 32px;
+        background-color: $_surface;
+        overflow-y: auto;
+    }
+
+    &__main-inner {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    // ── Section Header ───────────────────
+    &__header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 32px;
+
+        &-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: $_on-surface;
+            letter-spacing: -0.02em;
+        }
+
+        &-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #006E6F;
+            background: rgba($_cyan, 0.25);
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+    }
+
+    // ── Photo Grid (Bento) ───────────────
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    // ── Photo Card (captured) ────────────
+    &__photo {
+        position: relative;
+        aspect-ratio: 3/4;
+        border-radius: 16px;
+        overflow: hidden;
+        background: $_surface-low;
+        border: 1px solid rgba($_outline-variant, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: transform 200ms ease, box-shadow 200ms ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        &-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(50%);
+            transition: filter 500ms ease;
+        }
+
+        &:hover &-img {
+            filter: grayscale(0%);
+        }
+
+        &-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 60%);
+            pointer-events: none;
+        }
+
+        &-check {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            background: $_green;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba($_green, 0.4);
+
+            .material-symbols-outlined {
+                font-size: 18px;
+                font-variation-settings: 'FILL' 1;
+            }
+        }
+
+        &-label {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+        }
+
+        &-angle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        &-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 2px;
+        }
+    }
+
+    // ── Syncing Card ─────────────────────
+    &__syncing {
+        position: relative;
+        aspect-ratio: 3/4;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba($_primary, 0.06);
+        border: 2px dashed $_primary;
+
+        &-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        &-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba($_primary, 0.15);
+            border-top-color: $_primary;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        &-text {
+            text-align: center;
+
+            p:first-child {
+                font-size: 14px;
+                font-weight: 700;
+                color: $_primary;
+            }
+
+            p:last-child {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 10px;
+                color: rgba($_primary, 0.6);
+                text-transform: uppercase;
+                margin-top: 4px;
+            }
+        }
+
+        &-label {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+        }
+
+        &-angle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: rgba($_primary, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        &-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: $_primary;
+            margin-top: 2px;
+        }
+    }
+
+    // ── Empty Slot ───────────────────────
+    &__empty {
+        aspect-ratio: 3/4;
+        border-radius: 16px;
+        border: 2px dashed rgba($_outline-variant, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #fff;
+        transition: background 200ms ease;
+        cursor: default;
+
+        &:hover {
+            background: $_surface-low;
+        }
+
+        &-icon {
+            font-size: 28px;
+            color: rgba($_outline, 0.4);
+        }
+
+        &-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: $_outline;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+    }
+}
+
+// ── Keyframes ────────────────────────────
+@keyframes cosmeticPulseAmber {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.15);
+    }
+}
+
+@keyframes cosmeticPing {
+    75%,
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -4,6 +4,10 @@
 @use '../abstracts/mixins' as *;
 
 // Layout override for detail page
+.detail-page {
+    margin-top: 3rem;
+}
+
 .detail-page .main-content {
     @include flex-column;
     gap: var(--spacing-lg);

@@ -4,14 +4,17 @@
  * Single-page application entry point with hash-based routing.
  * Routes:
  *   (splash)       → Splash (shown briefly on startup)
- *   #/             → HomeView (device list)
- *   #/device/:uuid → DeviceDetailView (single device)
+ *   #/             → HomeView (dashboard)
+ *   #/connect      → ConnectDeviceView (device connection)
+ *   #/device/:uuid → AuthenticityView (single device)
  */
 
 const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
 
 const app = createApp({
     setup() {
+        const session = window.useSession();
+        
         // --- Routing ---
         const currentRoute = ref('splash');
         const routeParams = ref({});
@@ -19,11 +22,21 @@ const app = createApp({
         function parseHash() {
             const hash = window.location.hash || '#/';
 
-            // Device detail: #/device/:uuid
-            const deviceMatch = hash.match(/^#\/device\/(.+)$/);
+            // Connect device: #/connect
+            if (hash === '#/connect') {
+                currentRoute.value = 'connect';
+                routeParams.value = {};
+                return;
+            }
+
+            // Device authenticity: #/device/:uuid/:phase?
+            const deviceMatch = hash.match(/^#\/device\/([^\/]+)(?:\/(.+))?$/);
             if (deviceMatch) {
-                currentRoute.value = 'detail';
-                routeParams.value = { uuid: decodeURIComponent(deviceMatch[1]) };
+                currentRoute.value = 'connect';
+                routeParams.value = { 
+                    uuid: decodeURIComponent(deviceMatch[1]), 
+                    phase: deviceMatch[2] || 'authenticity' 
+                };
                 return;
             }
 
@@ -39,6 +52,54 @@ const app = createApp({
         const statusType = ref('ready');
         const statusText = ref('Initializing...');
         const toasts = ref([]);
+
+        // --- Dashboard State (will be populated via IPC / API) ---
+        const dashboardStats = ref({
+            todayAssessments: 0,
+            assessmentsDelta: 0,
+            acceptedOffers: 0,
+            offersDeltaPct: 0,
+            pendingReview: 0,
+            pendingAlert: ''
+        });
+        const recentAssessments = ref([]);
+        const operatorId = ref('OP-742'); // Mock operator
+
+        /**
+         * Load persistent data from DB
+         */
+        async function syncWithDB() {
+            await session.refreshHistory();
+            
+            // Map DB history to dashboard rows
+            recentAssessments.value = session.sessionHistory.value.slice(0, 5).map(s => {
+                const idParts = (s.sessionId || s.uuid || '').split('_');
+                const displayId = idParts.length > 1 ? idParts[idParts.length - 1].substring(0, 8) : idParts[0].substring(0, 8).toUpperCase();
+                
+                return {
+                    rawSessionId: s.sessionId,
+                    uuid: s.uuid,
+                    sessionId: `FX-${displayId}`,
+                deviceName: s.device?.ModelName || 'Unknown iPhone',
+                serialNumber: s.device?.SerialNumber || '---',
+                authPassed: s.data?.authenticity?.overallVerdict === 'all_genuine',
+                hardwareScore: s.data?.hardware?.battery?.healthPercent,
+                cosmeticGrade: s.data?.cosmetic?.grade,
+                offer: s.data?.pricing?.final,
+                status: s.status === 'completed' ? 'Accepted' : (s.status === 'abandoned' ? 'Abandoned' : 'Draft')
+                };
+            });
+
+            // Update stats
+            dashboardStats.value.todayAssessments = session.sessionHistory.value.filter(s => {
+                const today = new Date().setHours(0,0,0,0);
+                return s.createdAt >= today;
+            }).length;
+            
+            dashboardStats.value.acceptedOffers = session.sessionHistory.value
+                .filter(s => s.status === 'completed')
+                .reduce((acc, s) => acc + (s.data?.pricing?.final || 0), 0);
+        }
 
         // Initialize toast manager
         window.ToastManager.init(toasts);
@@ -103,51 +164,113 @@ const app = createApp({
         // --- Computed ---
         const currentComponent = computed(() => {
             if (currentRoute.value === 'splash') return 'Splash';
-            if (currentRoute.value === 'detail') return 'DeviceDetailView';
+            if (currentRoute.value === 'connect') return 'ConnectDeviceView';
             return 'HomeView';
         });
 
         const currentProps = computed(() => {
             if (currentRoute.value === 'splash') return {};
-            if (currentRoute.value === 'detail') {
-                return { uuid: routeParams.value.uuid };
+            if (currentRoute.value === 'connect') {
+                return {
+                    uuid: routeParams.value.uuid,
+                    activePhase: routeParams.value.phase || 'connect',
+                    devices: devices.value,
+                    statusType: statusType.value,
+                    statusText: statusText.value,
+                    operatorId: operatorId.value
+                };
             }
             return {
                 devices: devices.value,
                 isLoading: isLoading.value,
                 statusType: statusType.value,
                 statusText: statusText.value,
-                refreshLoading: refreshLoading.value
+                refreshLoading: refreshLoading.value,
+                stats: dashboardStats.value,
+                recentAssessments: recentAssessments.value,
+                operatorId: operatorId.value
             };
         });
 
         const currentEvents = computed(() => {
+            if (currentRoute.value === 'connect') {
+                return {
+                    'cancel-session': async () => { await session.cancelSession(); window.location.hash = '#/'; },
+                    'navigate-phase': (phase) => { 
+                        if (routeParams.value.uuid) {
+                            window.location.hash = `#/device/${encodeURIComponent(routeParams.value.uuid)}/${phase}`;
+                        }
+                    },
+                    'device-detected': (device) => {
+                        if (device && device.uuid) {
+                            window.location.hash = `#/device/${encodeURIComponent(device.uuid)}`;
+                        } else {
+                            console.log('[App] Simulate device detected (no real device)');
+                        }
+                    },
+                    'go-back': () => { window.location.hash = '#/'; }
+                };
+            }
             if (currentRoute.value === 'home') {
                 return {
                     refresh: refreshDevices,
-                    'generate-report': handleGenerateReport
+                    'generate-report': handleGenerateReport,
+                    'start-assessment': () => { window.location.hash = '#/connect'; },
+                    'resume-session': async (data) => {
+                        window.ToastManager.show('Resuming assessment...', 'info');
+                        const s = await session.resumeSessionById(data.rawSessionId);
+                        if (s) {
+                            window.location.hash = `#/device/${encodeURIComponent(data.uuid)}/${s.activePhase || 'authenticity'}`;
+                        } else {
+                            window.ToastManager.show('Failed to resume session', 'error');
+                        }
+                    },
+                    'navigate': (key) => { console.log('[App] Navigate:', key); },
+                    'logout': () => { console.log('[App] Logout requested'); },
+                    'view-all-assessments': () => { console.log('[App] View all assessments'); }
                 };
             }
             return {};
         });
 
         // --- Lifecycle ---
-        onMounted(() => {
+        onMounted(async () => {
             console.log('[App] Vue app mounted');
             setupIPCListeners();
+            await session.cleanupStaleSessions();
+            await syncWithDB();
+            
             statusType.value = 'ready';
             statusText.value = 'Ready - Waiting for devices';
 
             // Show splash briefly, then transition to the real route
-            setTimeout(() => {
+            setTimeout(async () => {
                 parseHash();
                 window.addEventListener('hashchange', parseHash);
+
+                // Resume check
+                const resumeUuid = localStorage.getItem('idt_active_uuid');
+                if (resumeUuid && currentRoute.value === 'home') {
+                    const s = await session.loadSession(resumeUuid);
+                    if (s && s.status === 'in-progress') {
+                        window.location.hash = `#/device/${encodeURIComponent(resumeUuid)}/${s.activePhase || 'authenticity'}`;
+                    }
+                }
             }, 1500);
         });
 
         onUnmounted(() => {
             window.removeEventListener('hashchange', parseHash);
             cleanupFns.forEach(fn => fn && fn());
+        });
+
+        // --- Watchers ---
+        // Refresh DB when returning to the dashboard
+        watch(currentRoute, async (newRoute) => {
+            if (newRoute === 'home') {
+                console.log('[App] Returned to home route, syncing with DB...');
+                await syncWithDB();
+            }
         });
 
         return {

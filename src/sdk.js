@@ -89,6 +89,7 @@ class IDTDeviceSDK {
         // Initialize sub-modules
         this.devices = new DevicesModule(this);
         this.diagnostics = new DiagnosticsModule(this);
+        this.authenticity = new AuthenticityModule(this);
         this.reports = new ReportsModule(this);
         this.events = new EventsModule();
 
@@ -389,6 +390,63 @@ class EventsModule {
         }
 
         return window.electronAPI.onDeviceError(callback);
+    }
+}
+
+// ============================================
+// Authenticity Module
+// ============================================
+
+class AuthenticityModule {
+    /**
+     * @param {IDTDeviceSDK} sdk
+     */
+    constructor(sdk) {
+        /** @private */
+        this._sdk = sdk;
+        /** @private */
+        this._cache = new Map();
+    }
+
+    /**
+     * Run a full authenticity check on a device
+     * @param {string} uuid - Device UUID
+     * @param {boolean} [useCache=false] - Whether to use cached results
+     * @returns {Promise<object>} AuthenticityResult
+     */
+    async check(uuid, useCache = false) {
+        if (useCache && this._cache.has(uuid)) {
+            const cached = this._cache.get(uuid);
+            if (Date.now() - cached.timestamp < 60000) { // 60s cache
+                return cached.data;
+            }
+        }
+
+        const api = this._sdk._getAPI();
+        const result = await api.checkAuthenticity(uuid);
+
+        if (!result.success) {
+            throw new Error(result.error || 'Authenticity check failed');
+        }
+
+        this._cache.set(uuid, {
+            data: result.data,
+            timestamp: Date.now()
+        });
+
+        return result.data;
+    }
+
+    /**
+     * Clear cached authenticity results
+     * @param {string} [uuid] - Specific UUID to clear, or all
+     */
+    clearCache(uuid) {
+        if (uuid) {
+            this._cache.delete(uuid);
+        } else {
+            this._cache.clear();
+        }
     }
 }
 

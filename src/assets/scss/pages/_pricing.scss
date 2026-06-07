@@ -1,0 +1,717 @@
+// ============================================
+// Pricing & Valuation View – F6 (Stitch design)
+// ============================================
+@use '../abstracts/mixins' as *;
+
+// --- Palette ---
+$_navy: #0F1E3C;
+$_violet: #711FFF;
+$_violet-deep: #5700d0;
+$_cyan: #01DFE1;
+$_cyan-dark: #00696A;
+$_surface: #F8F9FA;
+$_card: #FFFFFF;
+$_border: #E2E8F0;
+$_text: #0F1E3C;
+$_text-sub: #334155;
+$_text-muted: #64748b;
+$_text-faint: #94a3b8;
+$_error: #ba1a1a;
+
+// ================================
+// Layout
+// ================================
+.pricing-page {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+    background-color: $_surface;
+    font-family: 'Inter', sans-serif;
+    color: $_text;
+    overflow: hidden;
+}
+
+// ================================
+// Left Sidebar – Session Summary
+// ================================
+.pricing-page__sidebar {
+    width: 340px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 32px;
+    background-color: #f3f4f5;
+    border-right: 1px solid rgba($_border, 0.5);
+    overflow-y: auto;
+}
+
+// --- Device Card ---
+.pricing-page__device-card {
+    background: #f3f4f5;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pricing-page__device-img {
+    width: 128px;
+    height: 256px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    border-radius: 12px;
+}
+
+.pricing-page__device-img-placeholder {
+    width: 128px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    color: $_text-muted;
+}
+
+.pricing-page__time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba($_cyan-dark, 0.1);
+    padding: 4px 12px;
+    border-radius: 9999px;
+    margin-bottom: 12px;
+
+    .material-symbols-outlined {
+        font-size: 14px;
+        color: $_cyan;
+    }
+
+    span:last-child {
+        font-size: 11px;
+        font-weight: 700;
+        color: $_cyan-dark;
+    }
+}
+
+.pricing-page__device-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: $_text;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.pricing-page__device-meta {
+    font-size: 14px;
+    color: $_text-muted;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 4px;
+}
+
+// --- Phase Summary Rows ---
+.pricing-page__phase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pricing-page__phase-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: $_card;
+    border-radius: 10px;
+    transition: box-shadow 200ms ease;
+
+    &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+}
+
+.pricing-page__phase-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pricing-page__phase-icon {
+    font-size: 18px;
+
+    &--pass {
+        color: #22c55e;
+    }
+
+    &--warn {
+        color: #f59e0b;
+    }
+
+    &--info {
+        color: $_violet;
+    }
+
+    &--neutral {
+        color: $_text-muted;
+    }
+}
+
+.pricing-page__phase-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $_text-sub;
+}
+
+.pricing-page__phase-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+
+    &--pass {
+        color: #16a34a;
+    }
+
+    &--warn {
+        color: #d97706;
+    }
+
+    &--info {
+        color: $_violet;
+    }
+
+    &--neutral {
+        color: $_text;
+    }
+}
+
+// --- Report Card ---
+.pricing-page__report-card {
+    background: $_card;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba($_border, 0.5);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pricing-page__report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.pricing-page__report-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: $_text;
+}
+
+.pricing-page__report-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $_cyan-dark;
+    background: rgba($_cyan, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.pricing-page__report-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f3f4f5;
+    border-radius: 12px;
+    border: 1px solid rgba($_border, 0.5);
+    margin-bottom: 16px;
+}
+
+.pricing-page__report-file-icon {
+    font-size: 28px;
+    color: $_text-faint;
+}
+
+.pricing-page__report-file-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: $_text;
+}
+
+.pricing-page__report-file-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: $_text-muted;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+}
+
+.pricing-page__report-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.pricing-page__report-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid $_border;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: $_text-sub;
+    background: $_card;
+    cursor: pointer;
+    transition: all 200ms ease;
+
+    .material-symbols-outlined {
+        font-size: 16px;
+    }
+
+    &:hover {
+        background: #f8fafc;
+        border-color: darken($_border, 5%);
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+// ================================
+// Main Content – Right Panel
+// ================================
+.pricing-page__main {
+    flex: 1;
+    padding: 32px 48px;
+    overflow-y: auto;
+}
+
+.pricing-page__main-inner {
+    max-width: 960px;
+}
+
+.pricing-page__header {
+    margin-bottom: 32px;
+}
+
+.pricing-page__header-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: $_text;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+}
+
+.pricing-page__header-subtitle {
+    font-size: 13px;
+    color: $_text-muted;
+    font-weight: 500;
+    margin: 0;
+}
+
+// --- Bento Grid ---
+.pricing-page__bento {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+// --- Price Breakdown Card ---
+.pricing-page__breakdown-card {
+    background: $_card;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(15, 30, 60, 0.06);
+    border: 1px solid rgba($_border, 0.3);
+}
+
+.pricing-page__breakdown-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $_text-faint;
+    margin-bottom: 24px;
+    display: block;
+}
+
+.pricing-page__breakdown-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pricing-page__breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.pricing-page__breakdown-row-name {
+    color: $_text-sub;
+}
+
+.pricing-page__breakdown-row-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+
+    &--base {
+        color: $_text;
+    }
+
+    &--deduction {
+        color: $_error;
+    }
+
+    &--zero {
+        color: $_text-faint;
+    }
+}
+
+.pricing-page__breakdown-divider {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px dashed $_border;
+}
+
+.pricing-page__final-offer-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: #f0fdf4;
+    border-radius: 16px;
+}
+
+.pricing-page__final-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #166534;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.pricing-page__final-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 900;
+    color: #14532d;
+}
+
+// --- Right Column Cards ---
+.pricing-page__side-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+// --- Adjust Offer Card ---
+.pricing-page__adjust-card {
+    background: $_card;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba($_border, 0.5);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pricing-page__adjust-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $_text-faint;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.pricing-page__adjust-value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.pricing-page__adjust-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 900;
+    color: $_text;
+}
+
+.pricing-page__adjust-auto-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: $_violet;
+    background: rgba($_violet, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.pricing-page__adjust-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #edeeef;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: $_violet;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba($_violet, 0.3);
+        margin-top: -8px;
+    }
+
+    &::-webkit-slider-runnable-track {
+        height: 4px;
+        background: #edeeef;
+        border-radius: 2px;
+    }
+}
+
+.pricing-page__adjust-range {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: $_text-faint;
+    text-transform: uppercase;
+}
+
+// --- Market Insight Card ---
+.pricing-page__insight-card {
+    background: $_navy;
+    border-radius: 16px;
+    padding: 20px;
+    color: #fff;
+}
+
+.pricing-page__insight-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .material-symbols-outlined {
+        font-size: 14px;
+        color: $_cyan;
+    }
+
+    span:last-child {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: $_cyan;
+    }
+}
+
+.pricing-page__insight-text {
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 16px;
+
+    strong {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: $_cyan;
+        font-weight: 700;
+    }
+}
+
+.pricing-page__insight-bar {
+    height: 4px;
+    background: #334155;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.pricing-page__insight-bar-fill {
+    height: 100%;
+    background: $_cyan;
+    border-radius: 9999px;
+    transition: width 1s ease;
+}
+
+// ================================
+// CTA Section
+// ================================
+.pricing-page__cta {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.pricing-page__cta-primary {
+    width: 100%;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: $_cyan;
+    color: #004F50;
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 17px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba($_cyan, 0.3);
+    transition: all 200ms ease;
+
+    .material-symbols-outlined {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    &:hover {
+        filter: brightness(1.05);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.pricing-page__cta-secondary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.pricing-page__cta-secondary {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 2px solid $_border;
+    border-radius: 16px;
+    background: transparent;
+    color: $_text-sub;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 200ms ease;
+
+    .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    &:hover {
+        background: #f8fafc;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+// ================================
+// Loading State
+// ================================
+.pricing-page__loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 48px;
+    text-align: center;
+    background-color: $_surface;
+    z-index: 10;
+}
+
+.pricing-page__loading-spinner {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pricing-page__loading-spinner svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    animation: pricingSpin 2s linear infinite;
+}
+
+.pricing-page__loading-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: $_text;
+}
+
+.pricing-page__loading-subtitle {
+    font-size: 14px;
+    color: $_text-muted;
+    max-width: 400px;
+}
+
+@keyframes pricingSpin {
+    from {
+        transform: rotate(-90deg);
+    }
+
+    to {
+        transform: rotate(270deg);
+    }
+}
+
+// ================================
+// Responsive
+// ================================
+@media (max-width: 1024px) {
+    .pricing-page__bento {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .pricing-page {
+        flex-direction: column;
+    }
+
+    .pricing-page__sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid $_border;
+    }
+
+    .pricing-page__main {
+        padding: 24px;
+    }
+}
