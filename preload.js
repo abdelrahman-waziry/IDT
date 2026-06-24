@@ -176,7 +176,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
         const subscription = (event, data) => callback(data);
         ipcRenderer.on('cosmetic-device-reconnected', subscription);
         return () => ipcRenderer.removeListener('cosmetic-device-reconnected', subscription);
-    }
+    },
+
+    // ============================================
+    // Dashboard Diagnostic Report Submission
+    // ============================================
+
+    /**
+     * Submit diagnostic reports to the MezaTech dashboard API
+     * @param {object} params - { uuid, hardwareData, cosmeticData, photoPaths }
+     * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+     */
+    submitDiagnosticReports: (params) => ipcRenderer.invoke('submit-diagnostic-reports', params)
 });
 
 // Log that preload script has loaded successfully

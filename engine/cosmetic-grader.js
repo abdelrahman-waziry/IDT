@@ -8,9 +8,9 @@
  * @module engine/cosmetic-grader
  */
 
-const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 // OpenRouter API endpoint (OpenAI-compatible)
 const OPENROUTER_API_HOST = 'openrouter.ai';
@@ -58,7 +58,9 @@ function getMediaType(filePath) {
 function getGradingPrompt() {
     return `You are an expert mobile device cosmetic grading specialist. You have been shown photos of a mobile device from multiple angles.
 
-Analyze each photo carefully for cosmetic defects including but not limited to:
+Notice that each photo includes a translucent dark overlay mask. The mask is intentionally added to help users align the camera. You must ONLY grade the fully visible, unmasked area inside the clear stencil shape. Ignore any blurriness, darkness, or defects outside the clear stencil area.
+
+Analyze each photo carefully for cosmetic defects inside the unmasked area, including but not limited to:
 - Scratches (light, deep, hairline)
 - Cracks (screen, back glass, camera lens)
 - Dents and dings
@@ -87,7 +89,7 @@ Respond ONLY with valid JSON in this exact format (no markdown fences, no extra 
                     "description": "<brief description>"
                 }
             ],
-            "notes": "<brief overall assessment for this angle>"
+            "notes": "Always start this string with the view name, followed by a brief assessment (e.g., 'Front Screen: Heavy scratching near the top bezel.')"
         }
     ]
 }`;
@@ -96,16 +98,21 @@ Respond ONLY with valid JSON in this exact format (no markdown fences, no extra 
 /**
  * Build OpenRouter chat messages with images (OpenAI-compatible format)
  * @param {object} photos - Map of { [view]: filePath }
- * @returns {Array} Messages array for OpenRouter
+ * @returns {Promise<Array>} Messages array for OpenRouter
  */
-function buildChatMessages(photos) {
+async function buildChatMessages(photos) {
     const contentParts = [];
 
     // Add each photo as a base64 image_url block
     for (const [view, filePath] of Object.entries(photos)) {
-        const imageBuffer = fs.readFileSync(filePath);
+        // Resize and compress image using sharp to optimize payload
+        const imageBuffer = await sharp(filePath)
+            .resize({ width: 1024, height: 1024, fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 80 })
+            .toBuffer();
+            
         const base64Image = imageBuffer.toString('base64');
-        const mediaType = getMediaType(filePath);
+        const mediaType = 'image/jpeg'; // always jpeg after sharp conversion
 
         contentParts.push({
             type: 'image_url',
@@ -142,113 +149,79 @@ function buildChatMessages(photos) {
  * @param {string} model - Model identifier to use
  * @returns {Promise<object>} Parsed response with image scores
  */
-function analyzeWithOpenRouter(photos, apiKey, model) {
-    return new Promise((resolve, reject) => {
-        const messages = buildChatMessages(photos);
+async function analyzeWithOpenRouter(photos, apiKey, model) {
+    const messages = await buildChatMessages(photos);
 
-        const requestBody = JSON.stringify({
-            model: model,
-            messages: messages,
-            max_tokens: 4096,
-            temperature: 0.2
-        });
+    const requestBody = JSON.stringify({
+        model: model,
+        messages: messages,
+        max_tokens: 4096,
+        temperature: 0.2
+    });
 
-        const options = {
-            hostname: OPENROUTER_API_HOST,
-            path: OPENROUTER_API_PATH,
+    console.log(`[CosmeticGrader] Sending ${Object.keys(photos).length} photos to OpenRouter (model: ${model})...`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45-second timeout
+
+    try {
+        const response = await fetch(`https://${OPENROUTER_API_HOST}${OPENROUTER_API_PATH}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
                 'HTTP-Referer': 'https://mezatech.io',
                 'X-Title': 'IDT Cosmetic Grader'
-            }
-        };
-
-        console.log(`[CosmeticGrader] Sending ${Object.keys(photos).length} photos to OpenRouter (model: ${model})...`);
-
-        const req = https.request(options, (res) => {
-            console.log(`[CosmeticGrader] OpenRouter Response Status: ${res.statusCode}`);
-            let data = '';
-            res.on('data', chunk => { data += chunk; });
-            res.on('end', () => {
-                console.log(`[CosmeticGrader] OpenRouter Response received (Length: ${data.length})`);
-                console.log('[CosmeticGrader] ===== FULL RAW API RESPONSE START =====');
-                console.log(data);
-                console.log('[CosmeticGrader] ===== FULL RAW API RESPONSE END =====');
-                try {
-                    const parsed = JSON.parse(data);
-
-                    if (parsed.error) {
-                        const errMsg = parsed.error.message || parsed.error.code || JSON.stringify(parsed.error);
-                        reject(new Error(`OpenRouter API error: ${errMsg}`));
-                        return;
-                    }
-
-                    // Log full response structure for debugging
-                    console.log('[CosmeticGrader] Response keys:', Object.keys(parsed));
-                    if (parsed.choices && parsed.choices.length > 0) {
-                        const choice = parsed.choices[0];
-                        console.log('[CosmeticGrader] Choice keys:', Object.keys(choice));
-                        if (choice.message) {
-                            console.log('[CosmeticGrader] Message keys:', Object.keys(choice.message));
-                            console.log('[CosmeticGrader] Content type:', typeof choice.message.content);
-                            console.log('[CosmeticGrader] Content preview:', String(choice.message.content).substring(0, 200));
-                        }
-                    }
-
-                    // Extract text content — try multiple possible locations
-                    let textBlock = null;
-
-                    // Standard OpenAI format
-                    if (parsed.choices?.[0]?.message?.content) {
-                        textBlock = parsed.choices[0].message.content;
-                    }
-                    // Some models put it in a 'text' field
-                    else if (parsed.choices?.[0]?.text) {
-                        textBlock = parsed.choices[0].text;
-                    }
-                    // Some models return content as an array of parts
-                    else if (Array.isArray(parsed.choices?.[0]?.message?.content)) {
-                        const textPart = parsed.choices[0].message.content.find(p => p.type === 'text');
-                        if (textPart) textBlock = textPart.text;
-                    }
-                    // Check if there's a refusal or finish_reason issue
-                    else if (parsed.choices?.[0]?.message?.refusal) {
-                        reject(new Error(`Model refused: ${parsed.choices[0].message.refusal}`));
-                        return;
-                    }
-
-                    if (!textBlock) {
-                        console.error('[CosmeticGrader] Full response dump:', JSON.stringify(parsed).substring(0, 1000));
-                        reject(new Error('No text content in OpenRouter response'));
-                        return;
-                    }
-
-                    // Parse the JSON from the model's text response
-                    const responseText = textBlock.trim();
-                    // Strip markdown code fences if present
-                    const jsonText = responseText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-
-                    const gradeData = JSON.parse(jsonText);
-                    resolve(gradeData);
-
-                } catch (e) {
-                    console.error('[CosmeticGrader] Parse error:', e.message);
-                    console.error('[CosmeticGrader] Raw response:', data.substring(0, 500));
-                    reject(new Error('Failed to parse OpenRouter API response: ' + e.message));
-                }
-            });
+            },
+            body: requestBody,
+            signal: controller.signal
         });
 
-        req.on('error', (err) => {
-            console.error('[CosmeticGrader] Request error:', err.message);
-            reject(err);
-        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`OpenRouter API error (${response.status}): ${errorText}`);
+        }
 
-        req.write(requestBody);
-        req.end();
-    });
+        const parsed = await response.json();
+
+        if (parsed.error) {
+            const errMsg = parsed.error.message || parsed.error.code || JSON.stringify(parsed.error);
+            throw new Error(`OpenRouter API error: ${errMsg}`);
+        }
+
+        // Extract text content — try multiple possible locations
+        let textBlock = null;
+        if (parsed.choices?.[0]?.message?.content) {
+            textBlock = parsed.choices[0].message.content;
+        } else if (parsed.choices?.[0]?.text) {
+            textBlock = parsed.choices[0].text;
+        } else if (Array.isArray(parsed.choices?.[0]?.message?.content)) {
+            const textPart = parsed.choices[0].message.content.find(p => p.type === 'text');
+            if (textPart) textBlock = textPart.text;
+        } else if (parsed.choices?.[0]?.message?.refusal) {
+            throw new Error(`Model refused: ${parsed.choices[0].message.refusal}`);
+        }
+
+        if (!textBlock) {
+            throw new Error('No text content in OpenRouter response');
+        }
+
+        // Bulletproof JSON Parsing
+        const match = textBlock.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (!match) {
+            throw new Error('Failed to extract JSON from response');
+        }
+        
+        const jsonText = match[0];
+        const gradeData = JSON.parse(jsonText);
+        return gradeData;
+        
+    } catch (e) {
+        console.error('[CosmeticGrader] Parse/Network error:', e.message);
+        throw new Error('Failed to parse OpenRouter API response: ' + e.message);
+    } finally {
+        clearTimeout(timeoutId);
+    }
 }
 
 /**
@@ -285,13 +258,22 @@ function computeOverallGrade(imageScores) {
     const avgScore = dedupedScores.reduce((sum, s) => sum + s.score, 0) / dedupedScores.length;
 
     // Attach parent view name to each defect for contextual diagnostic notes
-    const allDefects = dedupedScores.flatMap(s =>
-        (s.defects || []).map(d => ({
-            ...d,
-            view: s.view,
-            viewLabel: s.view.replace(/_/g, ' ')
-        }))
-    );
+    const allDefects = dedupedScores.flatMap(s => {
+        const seenDefects = new Set();
+        const uniqueForView = [];
+        for (const d of (s.defects || [])) {
+            const key = `${d.type}-${d.severity}`;
+            if (!seenDefects.has(key)) {
+                seenDefects.add(key);
+                uniqueForView.push({
+                    ...d,
+                    view: s.view,
+                    viewLabel: s.view.replace(/_/g, ' ')
+                });
+            }
+        }
+        return uniqueForView;
+    });
 
     const hasCritical = allDefects.some(d =>
         ['crack', 'shatter', 'broken', 'fracture'].includes(d.type) && (d.confidence || 0) > 0.7

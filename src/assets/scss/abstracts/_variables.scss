@@ -1,43 +1,79 @@
 // ============================================
-// Variables & Design Tokens
+// Variables & Design Tokens — IMTI Brand
 // ============================================
 
-// --- Colors: Dark Theme ---
-$color-bg-primary: #0f0f1a;
-$color-bg-secondary: #1a1a2e;
-$color-bg-tertiary: #16213e;
-$color-bg-card: #1e1e32;
-$color-bg-hover: #252542;
+// --- IMTI Brand Colors ---
+$imti-indigo: #2A1C8C;
+$imti-violet: #5B4FE6;
+$imti-violet-hover: #463BC9;
+$imti-lift: #8B7FF0;
+$imti-lime: #A4FF00;
+
+// --- Violet Ramp ---
+$v-50: #EEEBFD;
+$v-100: #DAD4FB;
+$v-200: #BDB2F7;
+$v-300: #9B8CF1;
+$v-400: #7766EC;
+$v-500: #5B4FE6;
+$v-600: #463BC9;
+$v-700: #36299C;
+$v-800: #2A1C8C;
+$v-900: #1E1466;
+
+// --- Neutrals (violet-tinted) ---
+$gray-25: #FAFAFE;
+$gray-50: #F5F4FC;
+$gray-100: #ECEAF6;
+$gray-200: #E0DDEE;
+$gray-300: #C9C5DC;
+$gray-400: #9893B3;
+$gray-500: #645E80;
+$gray-700: #332E4A;
+$gray-900: #1A1730;
+
+// --- Surfaces (mapped to design tokens) ---
+$color-bg-primary: $gray-25;        // bg-page
+$color-bg-secondary: #FFFFFF;        // bg-surface
+$color-bg-tertiary: $gray-50;       // bg-panel
+$color-bg-card: #FFFFFF;
+$color-bg-hover: $gray-50;
+$color-bg-lavender: $v-50;
 
 // --- Accent ---
-$color-accent: #6c5ce7;
-$color-accent-hover: #5b4cdb;
-$color-accent-light: rgba(108, 92, 231, 0.15);
+$color-accent: $imti-violet;
+$color-accent-hover: $imti-violet-hover;
+$color-accent-light: $v-50;
 
-// --- Status ---
-$color-success: #00b894;
-$color-success-bg: rgba(0, 184, 148, 0.15);
-$color-warning: #fdcb6e;
-$color-warning-bg: rgba(253, 203, 110, 0.15);
-$color-danger: #e74c3c;
-$color-danger-bg: rgba(231, 76, 60, 0.15);
-$color-info: #74b9ff;
-$color-info-bg: rgba(116, 185, 255, 0.15);
+// --- Status (Semantic — reserved for meaning) ---
+$color-success: #16A34A;
+$color-success-bg: #E7F6EC;
+$color-success-text: #0F7A37;
+$color-warning: #E8A317;
+$color-warning-bg: #FCF1DA;
+$color-warning-text: #8A5D06;
+$color-danger: #DC2626;
+$color-danger-bg: #FCEBEB;
+$color-danger-text: #B0201F;
+$color-info: $imti-violet;
+$color-info-bg: $v-50;
+$color-info-text: #36299C;
 
 // --- Text ---
-$color-text-primary: #ffffff;
-$color-text-secondary: #a0a0b0;
-$color-text-muted: #6c6c7c;
+$color-text-primary: $gray-900;     // #1A1730
+$color-text-secondary: $gray-500;   // #645E80
+$color-text-muted: $gray-400;       // #9893B3
+$color-text-link: $imti-violet-hover; // #463BC9
 
 // --- Borders ---
-$color-border: rgba(255, 255, 255, 0.08);
-$color-border-hover: rgba(255, 255, 255, 0.15);
+$color-border: $gray-200;           // #E0DDEE
+$color-border-hover: $gray-300;     // #C9C5DC
 
-// --- Shadows ---
-$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-$shadow-glow: 0 0 20px rgba(108, 92, 231, 0.3);
+// --- Shadows (light-mode appropriate) ---
+$shadow-sm: 0 1px 3px rgba(26, 23, 48, 0.06);
+$shadow-md: 0 4px 12px rgba(26, 23, 48, 0.08);
+$shadow-lg: 0 8px 24px rgba(26, 23, 48, 0.12);
+$shadow-glow: 0 0 20px rgba(91, 79, 230, 0.25);
 
 // --- Spacing ---
 $spacing-xs: 4px;
@@ -59,8 +95,8 @@ $transition-normal: 250ms ease;
 $transition-slow: 350ms ease;
 
 // --- Typography ---
-$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-$font-family-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+$font-family: 'IBM Plex Sans', system-ui, sans-serif;
+$font-family-mono: 'IBM Plex Mono', monospace;
 
 $font-size-xs: 0.75rem;
 $font-size-sm: 0.875rem;

@@ -1,23 +1,23 @@
 // ============================================
-// Dashboard / Home – Fixtech Operator Command Center
-// Matches the Stitch "F1: Dashboard" design
+// Dashboard / Home – IMTI Operator Command Center
+// Product Layer — Restrained palette
 // ============================================
 @use '../abstracts/mixins' as *;
 
 // ————————————————————
-// Palette (light-mode dashboard)
+// Palette (light-mode dashboard — IMTI Product Layer)
 // ————————————————————
-$_navy: #0F1E3C;
-$_violet: #711FFF;
-$_violet-deep: #5700d0;
-$_cyan: #01DFE1;
-$_surface: #F6F7F8;
+$_ink: #1A1730;          // gray-900
+$_violet: #5B4FE6;       // imti-violet
+$_violet-hover: #463BC9; // violet-hover
+$_lift: #8B7FF0;         // lift
+$_surface: #FAFAFE;      // gray-25
 $_card: #FFFFFF;
-$_border: #E2E8F0;
-$_text: #0F1E3C;
-$_text-sub: #334155;
-$_text-muted: #64748b;
-$_text-faint: #94a3b8;
+$_border: #E0DDEE;       // gray-200
+$_text: #1A1730;         // gray-900
+$_text-sub: #332E4A;     // gray-700
+$_text-muted: #645E80;   // gray-500
+$_text-faint: #9893B3;   // gray-400
 
 // ————————————————————
 // Dashboard Layout (sidebar + main)
@@ -27,7 +27,7 @@ $_text-faint: #94a3b8;
     min-height: 100vh;
     background: $_surface;
     color: $_text;
-    font-family: 'Inter', var(--font-family);
+    font-family: 'IBM Plex Sans', var(--font-family);
 }
 
 // ————————————————————
@@ -72,7 +72,7 @@ $_text-faint: #94a3b8;
     &__brand-name {
         font-weight: 700;
         font-size: 14px;
-        color: $_navy;
+        color: $_ink;
         line-height: 1;
         display: block;
     }
@@ -160,7 +160,7 @@ $_text-faint: #94a3b8;
     &__title {
         font-size: 30px;
         font-weight: 700;
-        color: $_navy;
+        color: $_ink;
         letter-spacing: -0.4px;
         margin: 0;
     }
@@ -175,13 +175,13 @@ $_text-faint: #94a3b8;
         gap: 6px;
 
         &--online {
-            background: #dcfce7;
-            color: #15803d;
+            background: #E7F6EC;
+            color: #0F7A37;
         }
 
         &--offline {
-            background: #fef2f2;
-            color: #b91c1c;
+            background: #FCEBEB;
+            color: #B0201F;
         }
     }
 
@@ -253,7 +253,7 @@ $_text-faint: #94a3b8;
     &__operator-id {
         font-size: 12px;
         font-weight: 700;
-        color: $_navy;
+        color: $_ink;
     }
 }
 
@@ -316,7 +316,7 @@ $_text-faint: #94a3b8;
     &__value {
         font-size: 28px;
         font-weight: 800;
-        color: $_navy;
+        color: $_ink;
         letter-spacing: -0.5px;
     }
 
@@ -328,18 +328,18 @@ $_text-faint: #94a3b8;
         font-weight: 700;
 
         &--positive {
-            background: #dcfce7;
-            color: #15803d;
+            background: #E7F6EC;
+            color: #0F7A37;
         }
 
         &--warning {
-            background: #fef3c7;
-            color: #92400e;
+            background: #FCF1DA;
+            color: #8A5D06;
         }
 
         &--negative {
-            background: #fef2f2;
-            color: #b91c1c;
+            background: #FCEBEB;
+            color: #B0201F;
         }
     }
 
@@ -385,7 +385,7 @@ $_text-faint: #94a3b8;
 .dash-hero__gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, $_violet, $_cyan);
+    background: linear-gradient(135deg, $_violet, $_lift);
 }
 
 .dash-hero__icon-wrap {
@@ -418,7 +418,7 @@ $_text-faint: #94a3b8;
 .dash-hero__heading {
     font-size: 24px;
     font-weight: 700;
-    color: $_navy;
+    color: $_ink;
     margin: 0;
 }
 
@@ -429,8 +429,8 @@ $_text-faint: #94a3b8;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    background: #fef3c7;
-    color: #92400e;
+    background: #FCF1DA;
+    color: #8A5D06;
 }
 
 .dash-hero__desc {
@@ -454,11 +454,11 @@ $_text-faint: #94a3b8;
     font-size: 14px;
     cursor: pointer;
     transition: all 200ms ease;
-    box-shadow: 0 4px 20px rgba(113, 31, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(91, 79, 230, 0.3);
     align-self: flex-start;
 
     &:hover {
-        background: $_violet-deep;
+        background: $_violet-hover;
         transform: translateY(-1px);
     }
 
@@ -487,7 +487,7 @@ $_text-faint: #94a3b8;
 
     &__title {
         font-weight: 700;
-        color: $_navy;
+        color: $_ink;
         margin: 0;
         font-size: 16px;
     }
@@ -524,7 +524,7 @@ $_text-faint: #94a3b8;
     border-collapse: collapse;
 
     thead {
-        background: #f8fafc;
+        background: #F5F4FC;
 
         th {
             padding: 16px 24px;
@@ -554,9 +554,9 @@ $_text-faint: #94a3b8;
     }
 
     &__mono {
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
         font-size: 13px;
-        color: $_navy;
+        color: $_ink;
     }
 
     &__device {
@@ -567,13 +567,13 @@ $_text-faint: #94a3b8;
     &__device-name {
         font-weight: 700;
         font-size: 14px;
-        color: $_navy;
+        color: $_ink;
     }
 
     &__device-sn {
         font-size: 11px;
         color: $_text-faint;
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
     }
 
     &__auth {
@@ -583,7 +583,7 @@ $_text-faint: #94a3b8;
     &__cosmetic {
         font-weight: 700;
         font-size: 14px;
-        color: $_navy;
+        color: $_ink;
     }
 
     &__offer {
@@ -593,11 +593,11 @@ $_text-faint: #94a3b8;
 
 // Auth icon colors
 .dash-auth--pass {
-    color: #22c55e;
+    color: #16A34A;
 }
 
 .dash-auth--fail {
-    color: #ef4444;
+    color: #DC2626;
 }
 
 // Hardware score badge
@@ -609,18 +609,18 @@ $_text-faint: #94a3b8;
     font-weight: 700;
 
     &.dash-hw--good {
-        background: #dcfce7;
-        color: #15803d;
+        background: #E7F6EC;
+        color: #0F7A37;
     }
 
     &.dash-hw--warn {
-        background: #fef3c7;
-        color: #92400e;
+        background: #FCF1DA;
+        color: #8A5D06;
     }
 
     &.dash-hw--fail {
-        background: #fef2f2;
-        color: #b91c1c;
+        background: #FCEBEB;
+        color: #B0201F;
     }
 }
 
@@ -636,28 +636,28 @@ $_text-faint: #94a3b8;
 }
 
 .dash-status--accepted {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: #EEEBFD;
+    color: #36299C;
 }
 
 .dash-status--draft {
-    background: #f1f5f9;
-    color: #475569;
+    background: #F5F4FC;
+    color: #332E4A;
 }
 
 .dash-status--pending {
-    background: #fef3c7;
-    color: #92400e;
+    background: #FCF1DA;
+    color: #8A5D06;
 }
 
 .dash-status--rejected {
-    background: #fef2f2;
-    color: #b91c1c;
+    background: #FCEBEB;
+    color: #B0201F;
 }
 
 .dash-status--failed {
-    background: #fef2f2;
-    color: #b91c1c;
+    background: #FCEBEB;
+    color: #B0201F;
 }
 
 

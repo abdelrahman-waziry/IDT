@@ -18,7 +18,7 @@
         border-left: 4px solid var(--color-success);
 
         &:hover {
-            box-shadow: 0 8px 24px rgba(0, 184, 148, 0.2);
+            box-shadow: 0 8px 24px rgba(22, 163, 74, 0.2);
         }
     }
 
@@ -27,7 +27,7 @@
         border-left: 4px solid var(--color-danger);
 
         &:hover {
-            box-shadow: 0 8px 24px rgba(231, 76, 60, 0.2);
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.2);
         }
     }
 
@@ -134,7 +134,7 @@
 .card-error {
     padding: var(--spacing-md);
     background: var(--color-danger-bg);
-    border-top: 1px solid rgba(231, 76, 60, 0.3);
+    border-top: 1px solid rgba(220, 38, 38, 0.3);
 }
 
 .error-message {

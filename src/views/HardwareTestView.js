@@ -184,7 +184,7 @@ window.AppViews.HardwareTestView = {
                 
                 <button v-if="hw.state.value === 'complete'" 
                         @click="proceedToCosmetic" 
-                        class="w-full py-4 bg-[#711FFF] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#5500cb] transition-colors">
+                        class="w-full py-4 bg-[#5B4FE6] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#463BC9] transition-colors">
                     <span>Continue to Cosmetic</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>

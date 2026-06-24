@@ -1,5 +1,5 @@
 /**
- * HomeView – Fixtech Operator Command Center
+ * HomeView – IMTI Operator Command Center
  *
  * Dashboard view based on the Stitch "F1: Dashboard" design.
  * All data is bound dynamically through props and computed properties —
@@ -281,7 +281,7 @@ window.AppViews.HomeView = {
                                             <button v-if="row.status === 'Draft' || row.status === 'Abandoned'" 
                                                     @click="$emit('resume-session', { rawSessionId: row.rawSessionId, uuid: row.uuid })"
                                                     class="dash-header__icon-btn" 
-                                                    style="width:28px;height:28px;background:white;border:1px solid #E2E8F0;color:#711FFF"
+                                                    style="width:28px;height:28px;background:white;border:1px solid #E0DDEE;color:#5B4FE6"
                                                     title="Resume Session">
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

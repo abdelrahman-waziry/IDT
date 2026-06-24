@@ -18,7 +18,7 @@ let mainWindow = null;
 let deviceScanner = null;
 
 // Lazy load modules to ensure they're loaded after app is ready
-let DeviceScanner, DeviceManager, ReportGenerator, HardwareDiagnostics, APIService, AuthenticityService, CosmeticServer, CosmeticGrader;
+let DeviceScanner, DeviceManager, ReportGenerator, HardwareDiagnostics, APIService, AuthenticityService, CosmeticServer, CosmeticGrader, DashboardAPI;
 
 /**
  * Creates the main application window
@@ -36,8 +36,8 @@ function createWindow() {
             sandbox: false // Disable sandbox to allow preload to work properly
         },
         icon: path.join(__dirname, 'resources', 'icon.png'),
-        title: 'Diagnostic Tool',
-        backgroundColor: '#1a1a2e'
+        title: 'IMTI',
+        backgroundColor: '#FAFAFE'
     });
 
     // Load the main HTML file
@@ -310,6 +310,21 @@ function registerIPCHandlers() {
             return { success: false, active: false };
         }
     });
+
+    // ============================================
+    // Dashboard Diagnostic Report Submission
+    // ============================================
+
+    ipcMain.handle('submit-diagnostic-reports', async (event, { uuid, hardwareData, cosmeticData, photoPaths }) => {
+        try {
+            console.log('[Main] Submitting diagnostic reports to dashboard for:', uuid);
+            const result = await DashboardAPI.submitAllReports(uuid, hardwareData, cosmeticData, photoPaths);
+            return { success: true, data: result };
+        } catch (error) {
+            console.error('[Main] Dashboard submission error:', error);
+            return { success: false, error: error.message };
+        }
+    });
 }
 
 // ============================================
@@ -326,6 +341,7 @@ app.whenReady().then(() => {
     AuthenticityService = require('./engine/authenticity-service');
     CosmeticServer = require('./engine/cosmetic-server');
     CosmeticGrader = require('./engine/cosmetic-grader');
+    DashboardAPI = require('./engine/dashboard-api');
 
     // Register IPC handlers
     registerIPCHandlers();

@@ -1,20 +1,21 @@
 // ============================================
-// Connect Device View – F2 (Stitch design)
+// Connect Device View – IMTI Assessment Flow
 // ============================================
 @use '../abstracts/mixins' as *;
 
-// --- Palette ---
-$_navy: #0F1E3C;
-$_violet: #711FFF;
-$_violet-deep: #5700d0;
-$_cyan: #01DFE1;
-$_surface: #F6F7F8;
+// --- Palette (IMTI Product Layer) ---
+$_ink: #1A1730;
+$_violet: #5B4FE6;
+$_violet-hover: #463BC9;
+$_lift: #8B7FF0;
+$_indigo: #2A1C8C;
+$_surface: #FAFAFE;
 $_card: #FFFFFF;
-$_border: #E2E8F0;
-$_text: #0F1E3C;
-$_text-sub: #334155;
-$_text-muted: #64748b;
-$_text-faint: #94a3b8;
+$_border: #E0DDEE;
+$_text: #1A1730;
+$_text-sub: #332E4A;
+$_text-muted: #645E80;
+$_text-faint: #9893B3;
 
 // ================================
 // Layout
@@ -25,7 +26,7 @@ $_text-faint: #94a3b8;
     min-height: 100vh;
     background: $_surface;
     color: $_text;
-    font-family: 'Inter', var(--font-family);
+    font-family: 'IBM Plex Sans', var(--font-family);
 }
 
 // ================================
@@ -38,7 +39,7 @@ $_text-faint: #94a3b8;
     width: 100%;
     height: 56px;
     padding: 0 24px;
-    background: $_navy;
+    background: $_indigo;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     z-index: 50;
     -webkit-app-region: drag;
@@ -69,10 +70,10 @@ $_text-faint: #94a3b8;
     }
 
     &__operator-badge {
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
         font-size: 12px;
-        color: $_cyan;
-        background: rgba($_cyan, 0.1);
+        color: $_lift;
+        background: rgba($_lift, 0.15);
         padding: 2px 8px;
         border-radius: 4px;
     }
@@ -100,13 +101,13 @@ $_text-faint: #94a3b8;
         user-select: none;
 
         &--active {
-            color: $_cyan;
-            border-bottom-color: $_cyan;
+            color: $_lift;
+            border-bottom-color: $_lift;
         }
 
         &--done {
-            color: rgba(34, 197, 94, 0.9);
-            border-bottom-color: rgba(34, 197, 94, 0.4);
+            color: rgba(22, 163, 74, 0.9);
+            border-bottom-color: rgba(22, 163, 74, 0.4);
         }
 
         &--clickable {
@@ -115,7 +116,7 @@ $_text-faint: #94a3b8;
             &:hover {
                 opacity: 0.85;
                 filter: brightness(1.15);
-                border-bottom-color: rgba(34, 197, 94, 0.7);
+                border-bottom-color: rgba(22, 163, 74, 0.7);
             }
 
             &:active {
@@ -139,7 +140,7 @@ $_text-faint: #94a3b8;
         display: flex;
         align-items: center;
         gap: 6px;
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
         font-size: 14px;
         color: rgba(255, 255, 255, 0.6);
         background: rgba(255, 255, 255, 0.05);
@@ -155,7 +156,7 @@ $_text-faint: #94a3b8;
         font-size: 12px;
         font-weight: 700;
         color: #fca5a5;
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(220, 38, 38, 0.1);
         border: none;
         padding: 8px 16px;
         border-radius: 8px;
@@ -163,7 +164,7 @@ $_text-faint: #94a3b8;
         transition: all 200ms ease;
 
         &:hover {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(220, 38, 38, 0.2);
         }
 
         &:active {
@@ -256,12 +257,12 @@ $_text-faint: #94a3b8;
     align-items: flex-start;
 
     &--info {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
+        background: #EEEBFD;
+        border: 1px solid #DAD4FB;
     }
 
     &--success {
-        background: #f0fdf4;
+        background: #E7F6EC;
         border: 1px solid #bbf7d0;
     }
 
@@ -269,11 +270,11 @@ $_text-faint: #94a3b8;
         font-size: 22px;
 
         .connect-banner--info & {
-            color: #3b82f6;
+            color: $_violet;
         }
 
         .connect-banner--success & {
-            color: #22c55e;
+            color: #16A34A;
         }
     }
 
@@ -284,11 +285,11 @@ $_text-faint: #94a3b8;
         margin: 0;
 
         .connect-banner--info & {
-            color: #1e40af;
+            color: #36299C;
         }
 
         .connect-banner--success & {
-            color: #166534;
+            color: #0F7A37;
         }
     }
 }
@@ -316,7 +317,7 @@ $_text-faint: #94a3b8;
         padding: 16px;
         border-radius: 12px;
         background: $_card;
-        border: 1px solid #f1f5f9;
+        border: 1px solid #ECEAF6;
         transition: box-shadow 200ms ease;
 
         &:hover {
@@ -329,7 +330,7 @@ $_text-faint: #94a3b8;
         color: $_text-muted;
 
         &--done {
-            color: #22c55e;
+            color: #16A34A;
         }
     }
 
@@ -398,13 +399,13 @@ $_text-faint: #94a3b8;
         gap: 6px;
         padding: 8px 16px;
         border-radius: 8px;
-        background: #fef3c7;
-        border: 1px solid #fde68a;
+        background: #FCF1DA;
+        border: 1px solid #E8A317;
         margin-bottom: 40px;
 
         .material-symbols-outlined {
             font-size: 16px;
-            color: #d97706;
+            color: #E8A317;
         }
 
         span:last-child {
@@ -412,7 +413,7 @@ $_text-faint: #94a3b8;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #92400e;
+            color: #8A5D06;
         }
     }
 
@@ -444,7 +445,7 @@ $_text-faint: #94a3b8;
         &--primary {
             background: $_violet;
             color: #fff;
-            box-shadow: 0 4px 20px rgba(113, 31, 255, 0.3);
+            box-shadow: 0 4px 20px rgba(91, 79, 230, 0.3);
 
             &:hover {
                 opacity: 0.92;
@@ -457,7 +458,7 @@ $_text-faint: #94a3b8;
     }
 
     &__port-label {
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
         font-size: 11px;
         color: rgba($_text-muted, 0.5);
         font-weight: 500;
@@ -473,7 +474,7 @@ $_text-faint: #94a3b8;
         width: 320px;
         opacity: 0.08;
         pointer-events: none;
-        color: $_navy;
+        color: $_ink;
     }
 
     &__blueprint-svg {
@@ -506,7 +507,7 @@ $_text-faint: #94a3b8;
     }
 
     &__meta {
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
         font-size: 10px;
         color: rgba($_text-muted, 0.5);
     }
@@ -524,11 +525,11 @@ $_text-faint: #94a3b8;
         animation: footerPulse 2s infinite;
 
         &--online {
-            background: #22c55e;
+            background: #16A34A;
         }
 
         &--offline {
-            background: #ef4444;
+            background: #DC2626;
         }
     }
 

@@ -1,5 +1,5 @@
 /**
- * ConnectDeviceView – Fixtech Egypt
+ * ConnectDeviceView – IMTI
  *
  * Assessment flow screen (F2) for device connection / detection.
  * Based on the Stitch "F2: Connect Device" design.
@@ -25,7 +25,7 @@ window.AppViews.ConnectDeviceView = {
         /** Active assessment phase: 'connect' | 'authenticity' | 'hardware' | 'cosmetic' | 'pricing' */
         activePhase: { type: String, default: 'connect' },
         /** Engine / build version string */
-        engineVersion: { type: String, default: '4.2.0-STABLE' }
+        engineVersion: { type: String, default: '1.0.0-STABLE' }
     },
     emits: ['cancel-session', 'navigate-phase', 'device-detected', 'go-back'],
 
@@ -157,7 +157,7 @@ window.AppViews.ConnectDeviceView = {
         });
 
         // ------ Persistence Lifecycle ------
-        onMounted(async () => { 
+        onMounted(async () => {
             startTimer();
             if (props.uuid) {
                 await session.loadSession(props.uuid, firstDevice.value);
@@ -230,8 +230,8 @@ window.AppViews.ConnectDeviceView = {
             <header class="connect-topbar">
                 <div class="connect-topbar__left">
                     <div class="connect-topbar__brand">
-                        <img src="assets/images/coreinspect-logo.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; margin-right: 8px;" alt="Logo" />
-                        <span class="connect-topbar__brand-name">CoreInspect</span>
+                        <img src="assets/images/imti-logo.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; margin-right: 8px;" alt="Logo" />
+                        <span class="connect-topbar__brand-name">IMTI</span>
                         <span v-if="operatorId" class="connect-topbar__operator-badge">{{ operatorId }}</span>
                     </div>
                     <nav class="connect-topbar__phases">
@@ -251,8 +251,8 @@ window.AppViews.ConnectDeviceView = {
                     </nav>
                     <!-- All diagnostics complete badge (Stitch F6) -->
                     <div v-if="activePhase === 'pricing'" class="flex items-center gap-2 bg-[#00696A]/20 px-3 py-1 rounded-full ml-4">
-                        <span class="material-symbols-outlined text-[#01DFE1] text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                        <span class="text-[12px] font-semibold text-[#01DFE1] tracking-wide">All diagnostics complete</span>
+                        <span class="material-symbols-outlined text-[#8B7FF0] text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        <span class="text-[12px] font-semibold text-[#8B7FF0] tracking-wide">All diagnostics complete</span>
                     </div>
                 </div>
                 <div class="connect-topbar__right">
@@ -298,8 +298,8 @@ window.AppViews.ConnectDeviceView = {
                                         class="connect-ring__progress"/>
                                 <defs>
                                     <linearGradient id="connectGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stop-color="#711FFF"/>
-                                        <stop offset="100%" stop-color="#01DFE1"/>
+                                        <stop offset="0%" stop-color="#5B4FE6"/>
+                                        <stop offset="100%" stop-color="#8B7FF0"/>
                                     </linearGradient>
                                 </defs>
                             </svg>

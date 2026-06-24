@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Ibm+Plex+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-fixed": "#e3dfff", background: "#fcf8ff", tertiary: "#365800", "tertiary-fixed-dim": "#8ddc00", "on-secondary-container": "#2b1d8d", "on-background": "#1b1831", "inverse-primary": "#c4c0ff", "on-primary-fixed": "#120068", "surface-container-highest": "#e5deff", "on-tertiary-container": "#a5ff11", "surface-container-low": "#f6f1ff", outline: "#777586", "on-surface-variant": "#474555", "primary-container": "#5b4fe6", "on-secondary-fixed": "#130067", "surface-container-high": "#ebe5ff", secondary: "#584fba", "outline-variant": "#c8c4d7", "surface-container-lowest": "#ffffff", "surface-container": "#f0ebff", "secondary-fixed": "#e3dfff", "on-tertiary-fixed-variant": "#304f00", "on-primary-container": "#e7e3ff", "inverse-surface": "#302d47", "error-container": "#ffdad6", "tertiary-fixed": "#a1fb00", "surface-variant": "#e5deff", "secondary-fixed-dim": "#c5c0ff", "primary-fixed-dim": "#c4c0ff", "tertiary-container": "#487300", "surface-bright": "#fcf8ff", "surface-dim": "#dcd6f8", "surface-tint": "#5245dd", "on-surface": "#1b1831", "on-error-container": "#93000a", "inverse-on-surface": "#f3eeff", "secondary-container": "#958efd", primary: "#4231cd", "on-error": "#ffffff", "on-tertiary-fixed": "#102000", "on-secondary-fixed-variant": "#3f36a1", "on-primary-fixed-variant": "#3925c5", "on-tertiary": "#ffffff", "on-primary": "#ffffff", surface: "#fcf8ff", "on-secondary": "#ffffff", error: "#ba1a1a"}, fontFamily: {headline: ["Ibm Plex Sans"], body: ["Ibm Plex Sans"], label: ["Ibm Plex Sans"], mono: ["JetBrains Mono"], "title-sm": ["Ibm Plex Sans"], "display-lg": ["Ibm Plex Sans"], "body-md": ["IBM Plex Sans"], technical: ["Ibm Plex Mono"], "headline-md": ["IBM Plex Sans"], display: ["Ibm Plex Sans"], "body-lg": ["IBM Plex Sans"], "body-sm": ["IBM Plex Sans"], "data-tabular": ["IBM Plex Sans"], "headline-xl": ["IBM Plex Sans"], "headline-lg": ["IBM Plex Sans"], "label-caps": ["IBM Plex Sans"]}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, fontSize: {"title-sm": ["1rem", {lineHeight: "1.5", fontWeight: "600"}], "display-lg": ["3.5rem", {lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], technical: ["0.875rem", {lineHeight: "1.5", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "data-tabular": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-xl": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-caps": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}]}, spacing: {"margin-desktop": "32px", base: "8px", xs: "4px", lg: "48px", xl: "80px", gutter: "24px", "margin-mobile": "16px", sm: "12px", md: "24px"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes pulse-amber {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        .animate-pulse-amber {
+            animation: pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 bg-[#0F1E3C] h-[56px] shadow-2xl shadow-black/20">
+<div class="flex items-center gap-4">
+<span class="text-lg font-extrabold text-white tracking-tight">Fixtech Egypt</span>
+<div class="h-4 w-[1px] bg-white/20"></div>
+<span class="font-mono text-[12px] text-[#01DFE1] font-medium tracking-widest uppercase">Diagnostic Session</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10">
+<span class="material-symbols-outlined text-[18px] text-white/60">timer</span>
+<span class="font-mono text-white text-sm">00:12:45</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-white/40 hover:text-white cursor-pointer transition-colors">info</span>
+<button class="bg-error/10 text-error hover:bg-error/20 px-4 py-1.5 rounded-lg text-sm font-bold transition-all active:scale-95">
+                    Cancel Session
+                </button>
+</div>
+</div>
+</header>
+<!-- Layout Container -->
+<main class="pt-[56px] pb-20 min-h-screen flex">
+<!-- Left Panel: QR and Status -->
+<aside class="w-[400px] flex-shrink-0 bg-surface-container-low flex flex-col p-8 border-r border-outline-variant/10">
+<div class="space-y-6 flex-grow">
+<div class="space-y-2">
+<h3 class="text-2xl font-bold text-on-surface tracking-tight leading-none">Hand Work Phone to Operator</h3>
+<p class="text-on-surface-variant leading-relaxed">Please pass the device to the cosmetic station operator. They will scan the QR code to begin the visual verification process.</p>
+</div>
+<!-- Amber Reminder -->
+<div class="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200/50">
+<div class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse-amber"></div>
+<span class="text-amber-800 font-bold text-sm uppercase tracking-wide">Action Required: Unplug USB Cable</span>
+</div>
+<!-- QR Container -->
+<div class="mt-8 flex flex-col items-center">
+<div class="relative p-6 bg-white rounded-2xl shadow-xl shadow-black/5 border border-outline-variant/20">
+<div class="w-[200px] h-[200px] flex items-center justify-center bg-surface-container">
+<!-- Placeholder for QR Code -->
+<div class="w-full h-full opacity-80" data-alt="precise qr code for mobile device identification in a technical laboratory setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxVgwkpCUn362RYPgCN-msjowGaxB2-bSOCHpw4e22fLiwBVI_vFu5pfF5BmyjRFvY9qARr09WfzidcWj87fJsWi-DWPXB8OtfLt8sRYYqFIYZ6ibYpx7AlqoxuNcgc0wx7aiUoS0YOrcPW3o70R74ThC_aFF3lCb_yiMzlnj6AO2luHhQrHkTC39w4GyukwAEPHC1E3ieICZ_vSZ6ZcirV-vFA8T3qcS_CJdkjG8YO9PEprPaCDFGrMeeA-GkFCXdBNs4obaarHQ'); background-size: contain;"></div>
+</div>
+<div class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-on-background text-white rounded-full">
+<span class="font-mono text-xs font-medium tracking-tighter">#FX-8295-PHOTO</span>
+</div>
+</div>
+<div class="mt-10 flex flex-col items-center gap-3">
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+</span>
+<span class="font-bold text-sm text-on-surface-variant uppercase tracking-widest">Waiting for Operator</span>
+</div>
+<p class="text-xs text-outline text-center">Session will auto-resume once scan is detected</p>
+</div>
+</div>
+</div>
+<!-- Skip Banner -->
+<div class="mt-auto p-4 bg-amber-100/50 rounded-2xl border border-amber-200 flex flex-col gap-3">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-700">warning</span>
+<p class="text-[13px] text-amber-900 leading-snug">Skipping this step will mark the device as "Unverified" for cosmetic authenticity.</p>
+</div>
+<button class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-colors text-sm">
+                    Skip Cosmetic Evaluation
+                </button>
+</div>
+</aside>
+<!-- Right Panel: Photo Grid -->
+<section class="flex-grow p-8 bg-surface">
+<div class="max-w-5xl mx-auto space-y-8">
+<div class="flex items-baseline justify-between">
+<h2 class="text-[1.75rem] font-bold text-on-surface tracking-tight">Cosmetic Photo Grid</h2>
+<span class="font-mono text-sm text-secondary font-bold px-3 py-1 bg-secondary-container rounded-lg">LIVE_UPLOADS: 3/8</span>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<!-- Captured: Front -->
+<div class="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-sm">
+<img class="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500" data-alt="professional studio photo of a smartphone front screen with perfect lighting and reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwE3AAY4byjXok67Vi8gZXVkXtTmHLodjd0wD9EnBklVucdy6pNpDhzttQCX89Q4_CX2iErcYwbaHF4J4xJzNRPvVkqMv73i2MqGeBzkSp_TV0vfC8j9YIheddtOzRRWbQsS9H3oUD1m_92eHl4aPxIQXKHcgfHXNFw-PcpjsiMNrINhPKVFEgijX4W81zWdjpaDGm5GjaNSEzce1GK4qqDSeQ-NPDcmp4Z0INUy0-54M8Jymaq6GMLt7LuRV7qCcrXTTcZNolFwc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 right-3 bg-green-500 text-white rounded-full p-1 shadow-lg">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white text-[10px] font-mono tracking-widest uppercase opacity-60">Angle 01</p>
+<p class="text-white font-bold">Front Face</p>
+</div>
+</div>
+<!-- Captured: Back -->
+<div class="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-sm">
+<img class="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500" data-alt="professional studio photo of a smartphone glass back panel showing camera module detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr_uY3iuYal-ZWzQ0O4vss7ga66CouMHm3c15OHgq_DtsDAEYhBTLh4jiHcKcYF-7CjCCq52r-whk1XonnhdDio8F4rNGux6OcptpZeBOLzAPKTEGtYIza8PpZ5BtJ-WP1Cjxvl-ereFGhFj3qeNzqmG0-SHVFrCf3hUacdcKTxcDJY0kJJEUcU0Kl3f-W1xYoqXRYFBG39d11b5wo_Rr0L3NK4XsfdIxRAHIh2qKzIB7hG_BkewcmRvgQpQRYqer_S-4qo3YAOjA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 right-3 bg-green-500 text-white rounded-full p-1 shadow-lg">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white text-[10px] font-mono tracking-widest uppercase opacity-60">Angle 02</p>
+<p class="text-white font-bold">Back Chassis</p>
+</div>
+</div>
+<!-- Captured: Left Edge -->
+<div class="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-surface-container-low border border-outline-variant/10 shadow-sm">
+<img class="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500" data-alt="macro close-up of a smartphone side rail showing buttons and pristine metal finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIxiaVtFO63uQ3lDDGxnLQgJdhaxubx4CBd5MDxlW0anzci0JsRxuD_Y6FXneqRC67tZm3z2ypQVfFKVoTKETuv8gA6iyC6xW3CZc7l7cYBuw9-fQbSfwsnV7NOkf126sxcIxx2bfnydqiWFIhil00z0aVxNj5dsiFH3itXiXZ0SfC-tXyTxwQ4l1DbwF9jhBqexyv2ofGSHt9KYCTuKu-cj6cgLYGowML85IZEo-ITWV1hwhke-_AKRTtgOz_yF2xMdF7xstJHYA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 right-3 bg-green-500 text-white rounded-full p-1 shadow-lg">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white text-[10px] font-mono tracking-widest uppercase opacity-60">Angle 03</p>
+<p class="text-white font-bold">Left Edge</p>
+</div>
+</div>
+<!-- Syncing: Right Edge -->
+<div class="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-primary-container/10 border-2 border-primary border-dashed">
+<div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+<div class="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+<div class="text-center">
+<p class="text-primary font-bold text-sm">Syncing...</p>
+<p class="font-mono text-[10px] text-primary/60 uppercase">IMG_8295_RE.RAW</p>
+</div>
+</div>
+<div class="absolute bottom-4 left-4">
+<p class="text-primary/60 text-[10px] font-mono tracking-widest uppercase">Angle 04</p>
+<p class="text-primary font-bold">Right Edge</p>
+</div>
+</div>
+<!-- Empty: Top -->
+<div class="group aspect-[3/4] rounded-2xl border-2 border-outline-variant/30 border-dashed flex flex-col items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline/40 text-3xl">add_a_photo</span>
+<p class="text-outline text-xs font-bold uppercase tracking-widest">Top Profile</p>
+</div>
+<!-- Empty: Bottom -->
+<div class="group aspect-[3/4] rounded-2xl border-2 border-outline-variant/30 border-dashed flex flex-col items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline/40 text-3xl">add_a_photo</span>
+<p class="text-outline text-xs font-bold uppercase tracking-widest">Port Detail</p>
+</div>
+<!-- Empty: Detail -->
+<div class="group aspect-[3/4] rounded-2xl border-2 border-outline-variant/30 border-dashed flex flex-col items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline/40 text-3xl">add_a_photo</span>
+<p class="text-outline text-xs font-bold uppercase tracking-widest">IMEI Label</p>
+</div>
+<!-- Empty: Lens -->
+<div class="group aspect-[3/4] rounded-2xl border-2 border-outline-variant/30 border-dashed flex flex-col items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline/40 text-3xl">add_a_photo</span>
+<p class="text-outline text-xs font-bold uppercase tracking-widest">Lens Optics</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-4 pb-safe bg-white/80 dark:bg-[#0F1E3C]/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl">
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform duration-300 hover:opacity-80">
+<span class="material-symbols-outlined">verified</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Authenticity</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform duration-300 hover:opacity-80">
+<span class="material-symbols-outlined">memory</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Hardware</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#711FFF] dark:text-[#01DFE1] scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">potted_plant</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Cosmetic</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform duration-300 hover:opacity-80">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-wider mt-1">Pricing</span>
+</div>
+</nav>
+</body></html>

@@ -32,37 +32,37 @@ const PHOTO_VIEWS = [
         key: 'front_face', label: 'Front Face', angle: 'Angle 01',
         icon: 'smartphone',
         instruction: 'Align the full screen within the corner guides. Ensure no glare from overhead lighting.',
-        focusHint: 'center', captureType: 'wide'
+        focusHint: 'center', captureType: 'wide', maskType: 'phone_body'
     },
     {
         key: 'back_chassis', label: 'Back Chassis', angle: 'Angle 02',
         icon: 'flip_to_back',
         instruction: 'Capture the full back panel. Include camera module and any visible scratches.',
-        focusHint: 'center', captureType: 'wide'
+        focusHint: 'center', captureType: 'wide', maskType: 'phone_body'
     },
     {
         key: 'left_edge', label: 'Left Edge', angle: 'Angle 03',
         icon: 'phone_android',
         instruction: 'Hold device at a slight angle to expose the left side frame. Check for dents or scratches.',
-        focusHint: 'center', captureType: 'macro'
+        focusHint: 'center', captureType: 'macro', maskType: 'side_edge'
     },
     {
         key: 'right_edge', label: 'Right Edge', angle: 'Angle 04',
         icon: 'phone_android',
         instruction: 'Align the right side of the device within the green corner guides. Ensure no glare on metallic surfaces.',
-        focusHint: 'center', captureType: 'macro'
+        focusHint: 'center', captureType: 'macro', maskType: 'side_edge'
     },
     {
         key: 'top_profile', label: 'Top Profile', angle: 'Angle 05',
         icon: 'straighten',
         instruction: 'Capture the top edge straight-on. Look for chips or antenna band separation.',
-        focusHint: 'center', captureType: 'macro'
+        focusHint: 'center', captureType: 'macro', maskType: 'side_edge'
     },
     {
         key: 'port_detail', label: 'Port Detail', angle: 'Angle 06',
         icon: 'electrical_services',
         instruction: 'Close-up of the charging port. Check for debris, bent pins, or corrosion.',
-        focusHint: 'center-bottom', captureType: 'detail'
+        focusHint: 'center-bottom', captureType: 'detail', maskType: 'charging_port'
     }
 ];
 
@@ -197,6 +197,12 @@ function generateCapturePage(sessionId, views) {
         .vf--frozen canvas { display: block; }
         .vf--fallback-preview .vf__preview { display: block; }
         .vf--fallback-preview video { display: none; }
+
+        /* Dynamic SVG Mask Overlay */
+        .vf__mask {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            z-index: 4; pointer-events: none; transition: all 0.3s ease;
+        }
 
         /* Corner brackets */
         .vf__bracket {
@@ -378,6 +384,12 @@ function generateCapturePage(sessionId, views) {
         <video id="videoEl" autoplay playsinline muted></video>
         <canvas id="captureCanvas"></canvas>
         <img class="vf__preview" id="previewImg" alt="Preview" />
+        
+        <!-- Dynamic SVG Mask Overlay -->
+        <svg class="vf__mask" id="vfMask" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path id="vfMaskPath" fill="rgba(0, 0, 0, 0.65)" fill-rule="evenodd" d="M 0,0 L 100,0 L 100,100 L 0,100 Z"></path>
+        </svg>
+
         <div class="vf__bracket vf__bracket--tl"></div>
         <div class="vf__bracket vf__bracket--tr"></div>
         <div class="vf__bracket vf__bracket--bl"></div>
@@ -428,6 +440,21 @@ var SESSION = '${sessionId}';
 var LOCAL_URL = 'http://${localIP}:' + ${port};
 var TOTAL = VIEWS.length;
 var apiBase = ''; // empty = relative (tunnel), switches to LOCAL_URL on tunnel failure
+
+var MASK_PATHS = {
+    // A large rounded rectangle representing the full phone body
+    'phone_body': 'M 0,0 L 100,0 L 100,100 L 0,100 Z M 15,10 C 15,10 85,10 85,10 C 90,10 90,15 90,15 L 90,90 C 90,90 90,95 85,95 L 15,95 C 10,95 10,90 10,90 L 10,15 C 10,10 15,10 15,10 Z',
+    // A vertical rectangle for side profiles
+    'side_edge': 'M 0,0 L 100,0 L 100,100 L 0,100 Z M 35,5 L 65,5 L 65,95 L 35,95 Z',
+    // A small rectangle near the bottom for the port
+    'charging_port': 'M 0,0 L 100,0 L 100,100 L 0,100 Z M 30,60 C 30,60 70,60 70,60 C 75,60 75,65 75,65 L 75,85 C 75,85 75,90 70,90 L 30,90 C 25,90 25,85 25,85 L 25,65 C 25,60 30,60 30,60 Z'
+};
+
+var MASK_BOUNDS = {
+    'phone_body': { x: 0.15, y: 0.10, w: 0.70, h: 0.85 },
+    'side_edge': { x: 0.35, y: 0.05, w: 0.30, h: 0.90 },
+    'charging_port': { x: 0.30, y: 0.60, w: 0.40, h: 0.25 }
+};
 
 var currentIndex = 0;
 var capturedPhotos = {};
@@ -528,6 +555,7 @@ function doCapture() {
                     captureCanvas.width = tempImg.width;
                     captureCanvas.height = tempImg.height;
                     captureCanvas.getContext('2d').drawImage(tempImg, 0, 0);
+                    if (typeof burnMaskIntoCanvas === 'function') burnMaskIntoCanvas(captureCanvas);
                     freezeAndValidate();
                 };
                 tempImg.src = reader.result;
@@ -544,7 +572,26 @@ function doCapture() {
     captureCanvas.width = vw;
     captureCanvas.height = vh;
     captureCanvas.getContext('2d').drawImage(videoEl, 0, 0, vw, vh);
+    if (typeof burnMaskIntoCanvas === 'function') burnMaskIntoCanvas(captureCanvas);
     freezeAndValidate();
+}
+
+function burnMaskIntoCanvas(canvas) {
+    var view = VIEWS[currentIndex];
+    var maskType = view ? (view.maskType || 'phone_body') : 'phone_body';
+    var pathString = MASK_PATHS[maskType];
+    if (!pathString) return;
+
+    var ctx = canvas.getContext('2d');
+    ctx.save();
+    // The path is defined on a 100x100 coordinate system
+    ctx.scale(canvas.width / 100, canvas.height / 100);
+    
+    var path = new Path2D(pathString);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+    ctx.fill(path, 'evenodd');
+    
+    ctx.restore();
 }
 
 function freezeAndValidate() {
@@ -826,7 +873,10 @@ function canvasToBase64(canvas, maxDim, quality) {
 // Client-Side Validation
 // ═══════════════════════════════════════════
 function validateCapture(canvas) {
-    var checks = [ checkBlur(canvas), checkBrightness(canvas) ];
+    var view = VIEWS[currentIndex];
+    var maskType = view ? (view.maskType || 'phone_body') : 'phone_body';
+    
+    var checks = [ checkBlur(canvas), checkBrightness(canvas), checkMaskAlignment(canvas, maskType) ];
     var fail = checks.find(function(c) { return c.severity === 'fail'; });
     if (fail) return fail;
     var warn = checks.find(function(c) { return !c.pass; });
@@ -883,6 +933,43 @@ function checkBrightness(canvas) {
     return { pass: true, message: '', severity: 'warn' };
 }
 
+function checkMaskAlignment(canvas, maskType) {
+    var bounds = MASK_BOUNDS[maskType] || MASK_BOUNDS['phone_body'];
+    
+    var sx = Math.floor(bounds.x * canvas.width);
+    var sy = Math.floor(bounds.y * canvas.height);
+    var sw = Math.floor(bounds.w * canvas.width);
+    var sh = Math.floor(bounds.h * canvas.height);
+    
+    if (sw === 0 || sh === 0) return { pass: true, message: '', severity: 'warn' };
+    
+    var small = document.createElement('canvas');
+    small.width = 160; 
+    small.height = Math.round(160 * (sh / sw));
+    if (small.height === 0 || small.width === 0) return { pass: true, message: '', severity: 'warn' };
+    
+    small.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, small.width, small.height);
+    var data = small.getContext('2d').getImageData(0, 0, small.width, small.height).data;
+    
+    // Calculate simple contrast (std deviation of luminance) inside the mask
+    var sum = 0, sumSq = 0, count = small.width * small.height;
+    for (var i = 0; i < count; i++) {
+        var lum = 0.299 * data[i*4] + 0.587 * data[i*4+1] + 0.114 * data[i*4+2];
+        sum += lum;
+        sumSq += lum * lum;
+    }
+    var mean = sum / count;
+    var variance = (sumSq / count) - (mean * mean);
+    var stdDev = Math.sqrt(Math.max(0, variance));
+    
+    console.log('[Validate] Mask inner contrast (stdDev):', stdDev.toFixed(1));
+    
+    if (stdDev < 15) {
+        return { pass: false, message: 'Poor contrast inside target area. Please align the device within the stencil.', severity: 'warn' };
+    }
+    return { pass: true, message: '', severity: 'warn' };
+}
+
 // ═══════════════════════════════════════════
 // UI Rendering
 // ═══════════════════════════════════════════
@@ -893,6 +980,14 @@ function renderAngle() {
     document.getElementById('instrIcon').textContent = view.icon || 'photo_camera';
     document.getElementById('instrLabel').textContent = view.label;
     document.getElementById('instrDesc').textContent = view.instruction || '';
+    
+    // Update the dynamic mask overlay
+    var maskType = view.maskType || 'phone_body';
+    var maskPathEl = document.getElementById('vfMaskPath');
+    if (maskPathEl && MASK_PATHS[maskType]) {
+        maskPathEl.setAttribute('d', MASK_PATHS[maskType]);
+    }
+    
     renderDots();
 }
 

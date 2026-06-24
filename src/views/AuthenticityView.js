@@ -351,7 +351,7 @@ window.AppViews.AuthenticityView = {
                     </div>
 
                     <div class="mt-6 flex justify-end shrink-0">
-                        <button @click="proceedToHardware" class="bg-[#5700d0] hover:bg-[#4a00b3] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-[0_8px_20px_rgba(87,0,208,0.3)] active:scale-95 text-[15px]">
+                        <button @click="proceedToHardware" class="bg-[#5B4FE6] hover:bg-[#463BC9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shadow-[0_8px_20px_rgba(91,79,230,0.3)] active:scale-95 text-[15px]">
                             <span>Proceed to Hardware Test</span>
                             <span class="material-symbols-outlined text-xl">arrow_forward</span>
                         </button>

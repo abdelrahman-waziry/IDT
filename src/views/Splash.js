@@ -1,9 +1,9 @@
 /**
- * Splash View – Fixtech Egypt
+ * Splash View – IMTI
  *
  * Premium splash screen based on the Stitch design brief.
  * Features:
- *   - Deep navy backdrop with blurred violet / cyan orb decorations
+ *   - Deep indigo backdrop with blurred violet / lime orb decorations
  *   - Glassmorphic smartphone logo card
  *   - Animated progress bar with gradient fill + glow
  */
@@ -48,12 +48,12 @@ window.AppViews.Splash = {
             <div class="splash-content">
                 <!-- Logo card (glassmorphic) -->
                 <div class="splash-logo-card" style="padding: 16px;">
-                    <img src="assets/images/coreinspect-logo.png" style="width: 72px; height: 72px; object-fit: contain; border-radius: 12px;" alt="Logo" />
+                    <img src="assets/images/imti-logo.png" style="width: 72px; height: 72px; object-fit: contain; border-radius: 12px;" alt="Logo" />
                 </div>
 
                 <!-- Brand identity -->
                 <div class="splash-brand">
-                    <h1 class="splash-brand__name">CoreInspect</h1>
+                    <h1 class="splash-brand__name">IMTI</h1>
                     <p class="splash-brand__tagline">iPhone Assessment Platform</p>
                 </div>
 
@@ -71,7 +71,7 @@ window.AppViews.Splash = {
             </div>
 
             <!-- Footer -->
-            <p class="splash-footer">v0.0.1 · Authorized Use Only</p>
+            <p class="splash-footer">v1.0.0 · Authorized Use Only</p>
         </div>
     `
 };

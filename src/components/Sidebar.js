@@ -1,5 +1,5 @@
 /**
- * Sidebar Component – Fixtech Egypt
+ * Sidebar Component – IMTI
  *
  * Fixed left sidebar with branding, navigation, and logout.
  * Based on the Stitch "F1: Dashboard" design.
@@ -33,10 +33,10 @@ window.AppComponents.Sidebar = {
         <aside class="sidebar">
             <!-- Brand -->
             <div class="sidebar__brand">
-                <img src="assets/images/coreinspect-logo.png" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background: white;" alt="Logo" />
+                <img src="assets/images/imti-logo.png" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background: white;" alt="Logo" />
                 <div class="sidebar__brand-text" style="margin-left: 12px;">
-                    <span class="sidebar__brand-name">CoreInspect</span>
-                    <span class="sidebar__brand-sub">Diagnostic Platform</span>
+                    <span class="sidebar__brand-name">IMTI</span>
+                    <span class="sidebar__brand-sub">Assessment Platform</span>
                 </div>
             </div>
 

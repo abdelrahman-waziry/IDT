@@ -1,7 +1,7 @@
 {
-  "name": "ios-device-manager",
+  "name": "imti-iphone-assessment-platform",
   "version": "1.0.0",
-  "description": "iOS Device Manager - Desktop application for iOS device diagnostics",
+  "description": "IMTI: iPhone Assessment Platform",
   "main": "main.js",
   "scripts": {
     "sass:build": "sass src/assets/scss/main.scss src/assets/css/main.css --style=compressed --no-source-map",
@@ -22,6 +22,7 @@
     "pdfkit": "^0.14.0",
     "plist": "^3.1.0",
     "qrcode": "^1.5.4",
+    "sharp": "^0.34.5",
     "vue": "^3.4.21"
   },
   "devDependencies": {
@@ -30,8 +31,8 @@
     "sass": "^1.98.0"
   },
   "build": {
-    "appId": "com.mezatech.ios-device-manager",
-    "productName": "iOS Device Manager",
+    "appId": "com.imti.assessment-platform",
+    "productName": "IMTI: iPhone Assessment Platform",
     "directories": {
       "output": "dist",
       "buildResources": "resources"
@@ -43,30 +44,45 @@
       "engine/**/*",
       "resources/**/*"
     ],
-    "extraResources": [
-      {
-        "from": "resources/bin",
-        "to": "bin",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": true,
+      "license": "resources/license.txt"
+    },
     "win": {
+      "extraResources": [
+        {
+          "from": "resources/bin/win32",
+          "to": "bin/win32",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ],
       "target": [
         "nsis",
         "portable"
       ],
-      "icon": "resources/icon.ico",
+      "icon": "resources/icon.png",
       "signAndEditExecutable": false,
       "rfc3161TimeStampServer": null
     },
     "mac": {
+      "extraResources": [
+        {
+          "from": "resources/bin/darwin",
+          "to": "bin/darwin",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ],
       "target": [
         "dmg",
         "zip"
       ],
-      "icon": "resources/icon.icns",
+      "icon": "resources/icon.png",
       "category": "public.app-category.utilities"
     },
     "linux": {
@@ -74,7 +90,7 @@
         "AppImage",
         "deb"
       ],
-      "icon": "resources/icons"
+      "icon": "resources/icon.png"
     }
   }
 }

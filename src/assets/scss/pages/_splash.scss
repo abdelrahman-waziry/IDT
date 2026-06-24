@@ -1,14 +1,15 @@
 // ============================================
-// Splash Screen  –  Fixtech Egypt (Stitch design)
+// Splash Screen  –  IMTI (Brand Layer)
 // ============================================
 @use '../abstracts/mixins' as *;
 
-// --- Palette (scoped to splash) ---
-$_bg: #0F1E3C;
-$_violet: #5700d0;
-$_cyan: #01DFE1;
-$_text-muted: #64748b; // slate-500
-$_text-subtle: #94a3b8; // slate-400
+// --- Palette (scoped to splash — BRAND LAYER: full energy) ---
+$_bg: #2A1C8C; // Imti indigo
+$_violet: #5B4FE6; // Imti violet
+$_lime: #A4FF00; // Lime pop (replaces cyan)
+$_lift: #8B7FF0; // Lift
+$_text-muted: #9893B3; // gray-400
+$_text-subtle: #C9C5DC; // gray-300
 
 // ============================
 // Root container
@@ -22,7 +23,7 @@ $_text-subtle: #94a3b8; // slate-400
     color: #fff;
     overflow: hidden;
     animation: splashFadeIn 0.6s ease;
-    font-family: 'Inter', var(--font-family);
+    font-family: 'IBM Plex Sans', var(--font-family);
 }
 
 // ============================
@@ -52,7 +53,7 @@ $_text-subtle: #94a3b8; // slate-400
     &--cyan {
         bottom: -96px;
         right: -96px;
-        background: $_cyan;
+        background: $_lime;
     }
 }
 
@@ -80,7 +81,6 @@ $_text-subtle: #94a3b8; // slate-400
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     margin-bottom: var(--spacing-xl);
     animation: splashPulse 2.4s ease-in-out infinite;
 }
@@ -102,6 +102,7 @@ $_text-subtle: #94a3b8; // slate-400
         letter-spacing: -0.5px;
         margin: 0 0 4px;
         line-height: 1.2;
+        color: #fff;
     }
 
     &__tagline {
@@ -132,14 +133,14 @@ $_text-subtle: #94a3b8; // slate-400
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: $_text-muted;
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
     }
 
     &__pct {
         font-size: 0.875rem; // 14px
         font-weight: 700;
-        color: $_cyan;
-        font-family: 'JetBrains Mono', var(--font-family-mono);
+        color: $_lime;
+        font-family: 'IBM Plex Mono', var(--font-family-mono);
     }
 
     // --- Track & Fill ---
@@ -147,7 +148,7 @@ $_text-subtle: #94a3b8; // slate-400
         position: relative;
         width: 100%;
         height: 3px;
-        background: #1E3A5C;
+        background: rgba(255, 255, 255, 0.15);
         border-radius: var(--radius-full);
         overflow: visible;
     }
@@ -157,7 +158,7 @@ $_text-subtle: #94a3b8; // slate-400
         left: 0;
         top: 0;
         height: 100%;
-        background: $_cyan;
+        background: $_lime;
         filter: blur(4px);
         opacity: 0.4;
         transition: width 0.15s linear;
@@ -168,7 +169,7 @@ $_text-subtle: #94a3b8; // slate-400
         left: 0;
         top: 0;
         height: 100%;
-        background: linear-gradient(to right, $_violet, $_cyan);
+        background: linear-gradient(to right, $_violet, $_lime);
         border-radius: var(--radius-full);
         transition: width 0.15s linear;
     }
@@ -205,14 +206,15 @@ $_text-subtle: #94a3b8; // slate-400
 }
 
 @keyframes splashPulse {
+
     0%,
     100% {
         transform: scale(1);
-        box-shadow: 0 0 20px rgba(87, 0, 208, 0.25);
+        box-shadow: 0 0 20px rgba(91, 79, 230, 0.25);
     }
 
     50% {
         transform: scale(1.04);
-        box-shadow: 0 0 40px rgba(87, 0, 208, 0.45);
+        box-shadow: 0 0 40px rgba(91, 79, 230, 0.45);
     }
 }
