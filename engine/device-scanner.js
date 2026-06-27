@@ -117,12 +117,13 @@ class DeviceScanner extends EventEmitter {
 
             // If we had devices before but now have an error, emit change
             if (this.connectedDevices.size > 0) {
+                const removedDevices = [...this.connectedDevices];
                 this.connectedDevices.clear();
                 this.lastDeviceList = [];
                 this.emitChangeDebounced({
                     type: 'remove',
                     added: [],
-                    removed: [...this.connectedDevices],
+                    removed: removedDevices,
                     devices: []
                 });
             }

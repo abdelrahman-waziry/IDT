@@ -19,6 +19,7 @@ let deviceScanner = null;
 
 // Lazy load modules to ensure they're loaded after app is ready
 let DeviceScanner, DeviceManager, ReportGenerator, HardwareDiagnostics, APIService, AuthenticityService, CosmeticServer, CosmeticGrader, DashboardAPI;
+let PythonBridge, DeepDiagnostics, VerificationOrchestrator;
 
 /**
  * Creates the main application window
@@ -95,23 +96,14 @@ async function refreshDeviceList() {
         const uuids = await DeviceManager.getConnectedUUIDs();
         const devices = [];
 
-        for (const uuid of uuids) {
-            try {
-                const deviceInfo = await DeviceManager.getDeviceInfo(uuid);
-                devices.push({
-                    uuid,
-                    ...deviceInfo
-                });
-            } catch (error) {
-                console.error(`[Main] Error getting info for device ${uuid}:`, error);
-                devices.push({
-                    uuid,
-                    error: true,
-                    errorMessage: error.message || 'Unknown error',
-                    ActivationState: 'Error'
-                });
-            }
-        }
+        const results = await Promise.allSettled(uuids.map(u => DeviceManager.getDeviceInfo(u)));
+        results.forEach((r, i) => {
+            devices.push(
+                r.status === 'fulfilled'
+                    ? { uuid: uuids[i], ...r.value }
+                    : { uuid: uuids[i], error: true, errorMessage: r.reason?.message || 'Unknown error', ActivationState: 'Error' }
+            );
+        });
 
         sendToRenderer('devices-updated', devices);
         sendToRenderer('devices-loading', false);
@@ -276,7 +268,8 @@ function registerIPCHandlers() {
                 photoUrls[view] = `file:///${filePath.replace(/\\/g, '/')}`;
             }
 
-            const apiKey = process.env.OPENROUTER_API_KEY || '';
+            const apiKey = process.env.OPENROUTER_API_KEY;
+            if (!apiKey) return { success: false, error: 'OPENROUTER_API_KEY not set' };
             const report = await CosmeticGrader.gradePhotos(photos, apiKey);
 
             // Attach the photo URLs in the requested format
@@ -325,13 +318,25 @@ function registerIPCHandlers() {
             return { success: false, error: error.message };
         }
     });
+
+    ipcMain.handle('run-verification', async (event, uuid) => {
+        try {
+            return { success: true, data: await VerificationOrchestrator.runVerification(uuid) };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+
+    ipcMain.handle('check-python-bridge', async () => {
+        return { success: true, ready: PythonBridge.isReady() };
+    });
 }
 
 // ============================================
 // App Lifecycle Events
 // ============================================
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     // Load modules after app is ready
     DeviceScanner = require('./engine/device-scanner');
     DeviceManager = require('./engine/device-manager');
@@ -342,9 +347,15 @@ app.whenReady().then(() => {
     CosmeticServer = require('./engine/cosmetic-server');
     CosmeticGrader = require('./engine/cosmetic-grader');
     DashboardAPI = require('./engine/dashboard-api');
+    PythonBridge = require('./engine/python-bridge');
+    DeepDiagnostics = require('./engine/deep-diagnostics');
+    VerificationOrchestrator = require('./engine/verification-orchestrator');
 
     // Register IPC handlers
     registerIPCHandlers();
+
+    // Initialize Python sidecar (non-blocking)
+    await PythonBridge.initialize().catch(err => console.warn('[Main] Python sidecar failed:', err.message));
 
     // Create window
     createWindow();
@@ -373,6 +384,7 @@ app.on('before-quit', () => {
     if (deviceScanner) {
         deviceScanner.stopScanning();
     }
+    PythonBridge.shutdown();
 });
 
 // Handle uncaught exceptions

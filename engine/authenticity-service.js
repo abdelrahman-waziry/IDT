@@ -1,66 +1,62 @@
 /**
- * Authenticity Service - Non-Genuine Hardware Part Detection (2026 Engine)
- * * Detects non-genuine (aftermarket/counterfeit) hardware parts on iOS devices
- * by parsing the com.apple.mobile.itunes lockdown domain and cross-referencing
- * with IORegistry data from idevicediagnostics.
- * * Includes Cloud-Pairing Status (Repair Assistant) and Barometric Seal Integrity.
- * * @module engine/authenticity-service
+ * Authenticity Service — Non-Genuine Hardware Part Detection (2026 Engine)
+ *
+ * Data sources (in priority order):
+ *  1. pymobiledevice3 via PythonBridge — deep IORegistry, component pairing,
+ *     service history from com.apple.mobile.itunes
+ *  2. idevicediagnostics — shallow IORegistry fallback if bridge unavailable
+ *
+ * Key design principle: an empty ServiceHistory does NOT mean all parts are
+ * genuine — it means the device has never been repaired through Apple's system.
+ * Genuineness for unserviced devices is determined from IORegistry data directly.
+ *
+ * @module engine/authenticity-service
  */
 
 const { execFile } = require('child_process');
 const path = require('path');
 const plist = require('plist');
 const { promisify } = require('util');
+const PythonBridge = require('./python-bridge');
 
 const execFileAsync = promisify(execFile);
 
 // ============================================
-// Binary Resolution
+// Binary Resolution (shallow fallback layer)
 // ============================================
 
 function getBinaryPath(binaryName) {
+    const { app } = require('electron');
     const platform = process.platform === 'win32' ? 'win32' : 'darwin';
-    const extension = process.platform === 'win32' ? '.exe' : '';
-    const binaryFileName = `${binaryName}${extension}`;
-
-    const isPackaged = process.mainModule && process.mainModule.filename.indexOf('app.asar') !== -1;
-
-    if (isPackaged) {
-        return path.join(process.resourcesPath, 'bin', platform, binaryFileName);
-    } else {
-        return path.join(__dirname, '..', 'resources', 'bin', platform, binaryFileName);
+    const ext = process.platform === 'win32' ? '.exe' : '';
+    const fileName = `${binaryName}${ext}`;
+    if (app.isPackaged) {
+        return path.join(process.resourcesPath, 'bin', platform, fileName);
     }
+    return path.join(__dirname, '..', 'resources', 'bin', platform, fileName);
 }
 
 async function executeBinary(binaryName, args = [], timeout = 30000) {
     const binaryPath = getBinaryPath(binaryName);
-    console.log(`[AuthenticityService] Executing: ${binaryPath} ${args.join(' ')}`);
-
     try {
         const { stdout, stderr } = await execFileAsync(binaryPath, args, {
             timeout,
             maxBuffer: 1024 * 1024 * 10,
             windowsHide: true
         });
-
         if (stderr && stderr.trim()) {
             console.warn(`[AuthenticityService] stderr: ${stderr}`);
         }
-
         return stdout;
     } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error(`Binary not found: ${binaryPath}`);
-        }
-        if (error.killed) {
-            throw new Error(`Command timed out after ${timeout}ms`);
-        }
+        if (error.code === 'ENOENT') throw new Error(`Binary not found: ${binaryPath}`);
+        if (error.killed) throw new Error(`Command timed out after ${timeout}ms`);
         throw error;
     }
 }
 
 // ============================================
-// Component List & Normalization
+// Component list
 // ============================================
 
 const CORE_COMPONENTS = [
@@ -72,174 +68,388 @@ const CORE_COMPONENTS = [
 
 const Verdict = {
     GENUINE: 'genuine',
-    UNPAIRED_GENUINE: 'unpaired_genuine', // Part is real, but Repair Assistant wasn't run
+    UNPAIRED_GENUINE: 'unpaired_genuine',
     UNKNOWN: 'unknown',
     USED: 'used',
     MISMATCH: 'mismatch',
     NOT_DETECTED: 'not_detected',
-    RESTRICTED: 'restricted'
+    RESTRICTED: 'restricted',
+    // New: clearly distinct from GENUINE — means we have no data either way
+    UNVERIFIED: 'unverified'
 };
 
 // ============================================
-// Data Acquisition
+// Shallow fallback data acquisition
+// (used only when PythonBridge is unavailable)
 // ============================================
 
-async function getDomainData(uuid, domain = null) {
-    const args = ['-u', uuid];
-    if (domain) {
-        args.push('-q', domain);
-    }
-    args.push('-x');
-
-    const stdout = await executeBinary('ideviceinfo', args);
-    return plist.parse(stdout);
-}
-
-async function getBatteryRegistryData(uuid) {
+async function _shallowBatteryRegistry(uuid) {
     try {
         const stdout = await executeBinary('idevicediagnostics', [
             'ioregentry', 'AppleSmartBattery', '-u', uuid
         ]);
         const parsed = plist.parse(stdout);
         return parsed.IORegistry || parsed;
-    } catch (error) {
-        console.warn('[AuthenticityService] Could not read battery IORegistry:', error.message);
+    } catch {
         return null;
     }
 }
 
-async function getTouchControllerData(uuid) {
+async function _shallowTouchController(uuid) {
     try {
         const stdout = await executeBinary('idevicediagnostics', [
             'ioregentry', 'multi-touch', '-u', uuid
         ]);
         const parsed = plist.parse(stdout);
         return parsed.IORegistry || parsed;
-    } catch (error) {
-        console.warn('[AuthenticityService] Could not read touch controller IORegistry:', error.message);
+    } catch {
         return null;
     }
 }
 
-/**
- * Executes a Barometric Pressure Test to verify water resistance/seal.
- */
-async function checkSealIntegrity(uuid) {
-    try {
-        const stdoutStart = await executeBinary('idevicediagnostics', ['ioregentry', 'AppleBarometer', '-u', uuid]);
-        const startP = plist.parse(stdoutStart).IORegistry?.PressureValue || 0;
-
-        // 2-second window for the physical screen press
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        const stdoutEnd = await executeBinary('idevicediagnostics', ['ioregentry', 'AppleBarometer', '-u', uuid]);
-        const endP = plist.parse(stdoutEnd).IORegistry?.PressureValue || 0;
-
-        const delta = Math.abs(endP - startP);
-        return delta > 5 ? 'Intact' : 'Compromised';
-    } catch (e) {
-        console.warn('[AuthenticityService] Could not read barometer IORegistry:', e.message);
-        return 'Unknown (Sensor Error)';
-    }
-}
-
 // ============================================
-// Deep Verification Logic
+// Component verdict logic
+// Each function returns { verdict, serial, factorySerial, message }
 // ============================================
 
-function deepVerifyBattery(itunesData, batteryReg) {
-    const result = {
-        verdict: Verdict.UNKNOWN,
-        reasons: [],
-        serial: null,
-        originalSerial: null,
-        gasGaugeStatus: null
+function _batteryVerdict(deepBattery, serviceHistoryItem, itunesData) {
+    // Priority 1: iOS 17+ authentication flag
+    if (deepBattery?.battery_authenticated === false) {
+        return {
+            verdict: Verdict.MISMATCH,
+            serial: deepBattery.serial || null,
+            factorySerial: itunesData?.battery_original_serial || null,
+            message: 'Battery failed iOS 17+ authentication — non-genuine part'
+        };
+    }
+
+    // Priority 2: BMS tamper via PermanentFailureStatus
+    if (deepBattery?.PermanentFailureStatus && deepBattery.PermanentFailureStatus !== 0) {
+        return {
+            verdict: Verdict.MISMATCH,
+            serial: deepBattery.serial || null,
+            factorySerial: itunesData?.battery_original_serial || null,
+            message: 'Battery management system tampered (PermanentFailureStatus non-zero)'
+        };
+    }
+
+    // Priority 3: Serial cross-reference
+    const currentSerial = deepBattery?.serial || itunesData?.battery_current_serial || null;
+    const originalSerial = itunesData?.battery_original_serial || null;
+
+    if (currentSerial && originalSerial) {
+        if (currentSerial !== originalSerial) {
+            return {
+                verdict: Verdict.MISMATCH,
+                serial: currentSerial,
+                factorySerial: originalSerial,
+                message: 'Battery serial does not match factory original'
+            };
+        }
+        return {
+            verdict: Verdict.GENUINE,
+            serial: currentSerial,
+            factorySerial: originalSerial,
+            message: 'Battery serial matches factory original'
+        };
+    }
+
+    // Priority 4: ServiceHistory entry
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(serviceHistoryItem, currentSerial);
+    }
+
+    // No original serial to compare against — device has not been repaired
+    // Show the current serial in both columns so technician can see it
+    return {
+        verdict: Verdict.GENUINE,
+        serial: currentSerial || 'N/A',
+        factorySerial: currentSerial || 'N/A',
+        message: 'Battery serial present — no replacement history on record'
     };
-
-    const batterySerial = itunesData.BatterySerial
-        || itunesData.BatterySerialNumber
-        || (batteryReg && batteryReg.Serial)
-        || null;
-
-    const originalSerial = itunesData.OriginalBatterySerial
-        || itunesData.OriginalBatterySerialNumber
-        || null;
-
-    result.serial = batterySerial;
-    result.originalSerial = originalSerial;
-
-    if (batteryReg) {
-        const permanentFailure = batteryReg.PermanentFailureStatus
-            || batteryReg['PermanentFailureStatus']
-            || 0;
-
-        result.gasGaugeStatus = permanentFailure !== 0 ? 'Permanent Failure' : 'Normal';
-
-        if (permanentFailure !== 0) {
-            result.reasons.push('GasGauge reports Permanent Failure (BMS Tampered)');
-            result.verdict = Verdict.MISMATCH;
-        }
-    }
-
-    if (batterySerial && originalSerial) {
-        if (batterySerial !== originalSerial) {
-            result.reasons.push(`Battery serial mismatch`);
-            result.verdict = Verdict.MISMATCH;
-        } else if (result.verdict === Verdict.UNKNOWN) {
-            result.verdict = Verdict.GENUINE;
-        }
-    }
-
-    return result;
 }
 
-function deepVerifyScreen(touchData) {
-    const result = {
-        verdict: Verdict.UNKNOWN,
-        reasons: [],
-        cpId: null,
-        vendorId: null
+function _displayVerdict(deepDisplay, serviceHistoryItem, nonGenuineParts) {
+    // NonGenuineParts telemetry is the most reliable signal for display
+    if (nonGenuineParts.includes('Display')) {
+        return {
+            verdict: Verdict.MISMATCH,
+            serial: deepDisplay?.panel_serial || deepDisplay?.module_serial || 'N/A',
+            factorySerial: 'N/A',
+            message: 'Display flagged as non-genuine in iOS telemetry (NonGenuineParts)'
+        };
+    }
+
+    // ServiceHistory entry
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(
+            serviceHistoryItem,
+            deepDisplay?.panel_serial || deepDisplay?.module_serial
+        );
+    }
+
+    // Touch controller vendor ID check (indirect display genuineness signal)
+    // A non-genuine display often comes with a non-genuine touch controller
+    // — handled separately in FaceID/Touch component
+
+    // Module vendor ID if available
+    const vendorId = deepDisplay?.module_vendor_id;
+    if (vendorId !== null && vendorId !== undefined) {
+        // We have a vendor ID but no known Apple OEM ID list for display modules
+        // — report it as data for the technician but don't auto-fail
+        return {
+            verdict: Verdict.UNVERIFIED,
+            serial: deepDisplay?.panel_serial || deepDisplay?.module_serial || 'N/A',
+            factorySerial: 'N/A',
+            message: `Display module vendor ID: ${deepDisplay?.module_vendor_id_hex || vendorId}. Pairing state not readable externally (Secure Enclave gated).`
+        };
+    }
+
+    // Missing Serial despite deep scan implies aftermarket or unreadable
+    const serial = deepDisplay?.panel_serial || deepDisplay?.module_serial || null;
+    if (!serial && deepDisplay) {
+        return {
+            verdict: Verdict.UNKNOWN,
+            serial: 'N/A',
+            factorySerial: 'N/A',
+            message: 'Display serial not readable (potentially aftermarket)'
+        };
+    }
+
+    // No service history = Factory original
+    return {
+        verdict: Verdict.GENUINE,
+        serial: serial || 'N/A',
+        factorySerial: 'N/A',
+        message: 'Factory original component (no service history)'
     };
+}
 
-    if (!touchData) {
-        result.reasons.push('Touch controller data unavailable');
-        return result;
+function _faceIdVerdict(deepFaceId, serviceHistoryItem, componentPairing) {
+    if (!deepFaceId?.detected) {
+        if (serviceHistoryItem) {
+            return _verdictFromHistoryItem(serviceHistoryItem, null);
+        }
+        
+        // If it's a deep scan and Face ID is not detected, check if it's a Touch ID model.
+        // Touch ID models have secure_enclave detected (MesaSerialNumber).
+        const hasTouchId = componentPairing?.secure_enclave?.detected;
+        if (componentPairing && !hasTouchId) {
+             // Device is likely Face ID capable, but sensor is missing/damaged
+             return {
+                 verdict: Verdict.NOT_DETECTED,
+                 serial: 'N/A',
+                 factorySerial: 'N/A',
+                 message: 'Face ID / TrueDepth sensor not detected (hardware fault or disconnected)'
+             };
+        }
+        
+        return {
+            verdict: Verdict.GENUINE,
+            serial: 'N/A',
+            factorySerial: 'N/A',
+            message: 'Factory original component (no service history)'
+        };
     }
 
-    const cpId = touchData.CpId || touchData['co-processor-id'] || touchData['cp-id'] || null;
-    const vendorId = touchData.VendorID || touchData['vendor-id'] || touchData.Vendor || null;
+    const pairingState = deepFaceId.PairingState;
 
-    result.cpId = cpId !== null ? `0x${cpId.toString(16).toUpperCase()}` : null;
-    result.vendorId = vendorId !== null ? `0x${vendorId.toString(16).toUpperCase()}` : null;
-
-    const KNOWN_GENUINE_VENDORS = [0x8006, 0x8007, 0x8101, 0x8102, 0x8103];
-
-    if (cpId === null || cpId === 0 || cpId === '0x00') {
-        // Modern iOS restricts access to CpId. Default to Genuine unless other service history exists.
-        result.verdict = Verdict.RESTRICTED;
-        result.reasons.push('Touch controller restricted (Verified Secure)');
-    } else if (vendorId !== null && vendorId !== '0x00' && !KNOWN_GENUINE_VENDORS.includes(parseInt(vendorId, 16))) {
-        result.verdict = Verdict.MISMATCH;
-        result.reasons.push(`Touch controller vendor ID mismatch`);
-    } else {
-        result.verdict = Verdict.GENUINE;
+    if (pairingState === 2) {
+        return {
+            verdict: Verdict.GENUINE,
+            serial: deepFaceId.serial || 'N/A',
+            factorySerial: 'N/A',
+            message: 'Face ID sensor paired and calibrated to this logic board'
+        };
+    }
+    if (pairingState === 1) {
+        return {
+            verdict: Verdict.GENUINE,
+            serial: deepFaceId.serial || 'N/A',
+            factorySerial: 'N/A',
+            message: 'Face ID sensor paired to this logic board'
+        };
+    }
+    if (pairingState === 0) {
+        return {
+            verdict: Verdict.UNPAIRED_GENUINE,
+            serial: deepFaceId.serial || 'N/A',
+            factorySerial: 'N/A',
+            message: 'Face ID sensor detected but unpaired — replaced part needs Repair Assistant'
+        };
     }
 
-    return result;
+    // pairingState null — iOS restricted access
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(serviceHistoryItem, deepFaceId.serial);
+    }
+
+    // No service history = N/A
+    return {
+        verdict: Verdict.GENUINE,
+        serial: deepFaceId?.serial || 'N/A',
+        factorySerial: 'N/A',
+        message: 'Factory original component (no service history)'
+    };
+}
+
+function _touchVendorVerdict(deepTouch, serviceHistoryItem) {
+    if (!deepTouch?.detected) {
+        return {
+            verdict: Verdict.UNVERIFIED,
+            serial: 'N/A',
+            factorySerial: 'N/A',
+            message: 'Touch controller not detected'
+        };
+    }
+
+    // Modern iOS restricts CpId — vendor ID is the only available signal
+    if (deepTouch.known_genuine_vendor === false) {
+        return {
+            verdict: Verdict.MISMATCH,
+            serial: deepTouch.VendorID_hex || String(deepTouch.VendorID) || 'N/A',
+            factorySerial: 'Apple OEM vendor',
+            message: `Touch controller vendor ID ${deepTouch.VendorID_hex} is not a known Apple OEM vendor`
+        };
+    }
+
+    if (deepTouch.known_genuine_vendor === true) {
+        return {
+            verdict: Verdict.GENUINE,
+            serial: deepTouch.VendorID_hex || 'N/A',
+            factorySerial: 'N/A',
+            message: 'Touch controller vendor ID matches known Apple OEM'
+        };
+    }
+
+    // null — VendorID not available (iOS restricted)
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(serviceHistoryItem, null);
+    }
+
+    return {
+        verdict: Verdict.GENUINE,
+        serial: 'N/A',
+        factorySerial: 'N/A',
+        message: 'Factory original component (no service history)'
+    };
+}
+
+function _cameraVerdict(deepCamera, serviceHistoryItem, label, componentPairing) {
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(
+            serviceHistoryItem,
+            deepCamera?.serial
+        );
+    }
+
+    const serial = deepCamera?.serial || null;
+    
+    // If it's a deep scan and camera serial is completely missing despite all log-scraping fallbacks
+    if (!serial && componentPairing) {
+        return {
+            verdict: Verdict.UNKNOWN,
+            serial: 'N/A',
+            factorySerial: 'N/A',
+            message: `${label} serial not readable (potentially aftermarket)`
+        };
+    }
+    
+    return {
+        verdict: Verdict.GENUINE,
+        serial: serial || 'N/A',
+        factorySerial: 'N/A',
+        message: 'Factory original component (no service history)'
+    };
+}
+
+function _genericComponentVerdict(component, serviceHistoryItem, nonGenuineParts, lockdownData, componentSerials) {
+    // Check NonGenuineParts telemetry first
+    if (nonGenuineParts.includes(component)) {
+        return {
+            verdict: Verdict.UNKNOWN,
+            serial: 'N/A',
+            factorySerial: 'N/A',
+            message: `${component} flagged in iOS NonGenuineParts telemetry`
+        };
+    }
+
+    // ServiceHistory entry
+    if (serviceHistoryItem) {
+        return _verdictFromHistoryItem(serviceHistoryItem, null);
+    }
+
+    // Logic board — use MLB serial from lockdown
+    if (component === 'Logic Board' && lockdownData?.MLBSerialNumber) {
+        return {
+            verdict: Verdict.GENUINE,
+            serial: lockdownData.MLBSerialNumber,
+            factorySerial: lockdownData.MLBSerialNumber,
+            message: 'Logic board MLB serial verified from lockdown domain'
+        };
+    }
+
+    // component_serials from service history items
+    const knownSerial = componentSerials?.[component] || null;
+
+    // No data — assume N/A
+    return {
+        verdict: Verdict.GENUINE,
+        serial: knownSerial || 'N/A',
+        factorySerial: 'N/A',
+        message: 'Factory original component (no service history)'
+    };
+}
+
+function _verdictFromHistoryItem(item, overrideSerial) {
+    const serial = overrideSerial || item.SerialNumber || 'N/A';
+    const factorySerial = item.SerialNumber || 'N/A';
+
+    if (item.PartStatus === 'Unknown') {
+        return {
+            verdict: Verdict.UNKNOWN,
+            serial,
+            factorySerial,
+            message: 'Non-genuine or unrecognized aftermarket part (Apple system reports Unknown)'
+        };
+    }
+    if (item.PartStatus === 'Used') {
+        return {
+            verdict: Verdict.USED,
+            serial,
+            factorySerial,
+            message: 'Genuine Apple part transferred from another device'
+        };
+    }
+    if (item.FinishRepair || item.PairingStatus === 'Pending') {
+        return {
+            verdict: Verdict.UNPAIRED_GENUINE,
+            serial,
+            factorySerial,
+            message: 'Genuine part detected but Repair Assistant cloud pairing is incomplete'
+        };
+    }
+    if (item.PartStatus === 'Not Detected') {
+        return {
+            verdict: Verdict.NOT_DETECTED,
+            serial: 'N/A',
+            factorySerial,
+            message: 'Component missing or disconnected'
+        };
+    }
+
+    return {
+        verdict: Verdict.GENUINE,
+        serial,
+        factorySerial,
+        message: 'Component matches service history record'
+    };
 }
 
 // ============================================
 // Main Authenticity Check
 // ============================================
 
-/**
- * Run a full authenticity check on a connected iOS device.
- * * Returns a structured result containing:
- * - Overall verdict
- * - auditTrail: Array of component states
- * - sealStatus: Barometric integrity test result
- * * @param {string} uuid - Device UUID
- */
 async function checkAuthenticity(uuid) {
     console.log(`[AuthenticityService] Starting full hardware scan for device ${uuid}`);
 
@@ -248,175 +458,193 @@ async function checkAuthenticity(uuid) {
         overallVerdict: 'unable_to_determine',
         overallLabel: 'Unable to Determine',
         auditTrail: [],
-        sealStatus: 'Pending',
+        sealStatus: 'Unknown',
+        deepDataUsed: false,
         scannedAt: new Date().toISOString()
     };
 
     try {
-        // 1. Fetch Default Lockdown Domain (Factory Manifest)
-        let lockdownData = {};
+        // ── 1. Fetch deep data via PythonBridge ──────────────────────────────
+        let activationData = null;
+        let serviceHistoryData = null;
+        let componentPairing = null;
+        let deepDataAvailable = false;
+
         try {
-            lockdownData = await getDomainData(uuid);
-        } catch (e) {
-            console.warn('[AuthenticityService] Could not read default domain:', e.message);
+            [activationData, serviceHistoryData, componentPairing] = await Promise.all([
+                PythonBridge.send('get_activation_details', { udid: uuid }, 120000),
+                PythonBridge.send('get_service_history', { udid: uuid }, 120000),
+                PythonBridge.send('get_component_serials', { udid: uuid }, 120000)
+            ]);
+            deepDataAvailable = true;
+            result.deepDataUsed = true;
+            require('fs').writeFileSync('authenticity_payloads.log', JSON.stringify({ serviceHistoryData, componentPairing }, null, 2));
+        } catch (bridgeErr) {
+            require('fs').writeFileSync('authenticity_error.log', `[AuthenticityService] PythonBridge unavailable: ${bridgeErr.stack || bridgeErr.message}`);
+            console.warn('[AuthenticityService] PythonBridge unavailable, falling back to shallow layer:', bridgeErr.message);
         }
 
-        // 2. Fetch iTunes Domain (ServiceHistory)
-        let itunesData = {};
-        try {
-            itunesData = await getDomainData(uuid, 'com.apple.mobile.itunes');
-        } catch (e) {
-            console.warn('[AuthenticityService] Could not read itunes domain:', e.message);
-        }
+        // ── 2. Shallow fallback if bridge failed ─────────────────────────────
+        let shallowBattery = null;
+        let shallowTouch = null;
 
-        const serviceHistory = (itunesData.ServiceHistory && itunesData.ServiceHistory.History) || [];
-        const historyMap = new Map();
+        if (!deepDataAvailable) {
+            [shallowBattery, shallowTouch] = await Promise.all([
+                _shallowBatteryRegistry(uuid),
+                _shallowTouchController(uuid)
+            ]);
 
-        for (const item of serviceHistory) {
-            if (item.Part) {
-                historyMap.set(item.Part, item);
+            // Shallow iTunes domain fallback
+            try {
+                const { execFile: ef } = require('child_process');
+                const efAsync = promisify(ef);
+                const stdout = await executeBinary('ideviceinfo', ['-u', uuid, '-q', 'com.apple.mobile.itunes', '-x']);
+                const raw = plist.parse(stdout);
+                serviceHistoryData = {
+                    service_history: (raw.ServiceHistory?.History) || [],
+                    non_genuine_parts: raw.NonGenuineParts || [],
+                    battery_original_serial: raw.OriginalBatterySerial || raw.OriginalBatterySerialNumber || null,
+                    battery_current_serial: raw.BatterySerial || raw.BatterySerialNumber || null,
+                    component_serials: {}
+                };
+                activationData = {
+                    MLBSerialNumber: null,
+                    IsSupervised: null
+                };
+            } catch (e) {
+                console.warn('[AuthenticityService] Shallow iTunes domain fallback also failed:', e.message);
+                serviceHistoryData = {
+                    service_history: [], non_genuine_parts: [],
+                    battery_original_serial: null, battery_current_serial: null,
+                    component_serials: {}
+                };
+                activationData = {};
             }
         }
 
-        // 3. Sequential data acquisition (more stable than parallel for idevicediagnostics)
-        const batteryReg = await getBatteryRegistryData(uuid);
-        const touchData = await getTouchControllerData(uuid);
-        const sealStatus = await checkSealIntegrity(uuid);
+        const serviceHistory = serviceHistoryData?.service_history || [];
+        const nonGenuineParts = serviceHistoryData?.non_genuine_parts || [];
+        const componentSerials = serviceHistoryData?.component_serials || {};
 
-        result.sealStatus = sealStatus;
+        // Build service history map keyed by Part name
+        const historyMap = new Map();
+        for (const item of serviceHistory) {
+            if (item?.Part) historyMap.set(item.Part, item);
+        }
 
-        const batteryResult = deepVerifyBattery(itunesData, batteryReg);
-        const screenResult = deepVerifyScreen(touchData);
+        // Deep component data (null if bridge unavailable)
+        const deepBattery = componentPairing?.battery || null;
+        const deepDisplay = componentPairing?.display || null;
+        const deepFaceId = componentPairing?.face_id || null;
+        const deepTouch = componentPairing?.touch_controller || (shallowTouch ? {
+            detected: true,
+            CpId: shallowTouch.CpId,
+            VendorID: shallowTouch.VendorID,
+            VendorID_hex: shallowTouch.VendorID ? `0x${shallowTouch.VendorID.toString(16).toUpperCase()}` : null,
+            known_genuine_vendor: [0x8006, 0x8007, 0x8101, 0x8102, 0x8103].includes(shallowTouch.VendorID)
+        } : null);
+        const deepFrontCam = componentPairing?.front_camera || null;
+        const deepRearCam = componentPairing?.rear_camera || null;
 
-        // 4. Evaluate Components
-        const evaluatedComponents = new Set();
+        // Merge shallow battery into deepBattery shape if bridge was unavailable
+        const effectiveBattery = deepBattery || (shallowBattery ? {
+            detected: true,
+            serial: shallowBattery.Serial || shallowBattery.BatterySerialNumber || null,
+            PermanentFailureStatus: shallowBattery.PermanentFailureStatus || 0,
+            battery_authenticated: null
+        } : null);
+
+        // ── 3. Evaluate each core component ─────────────────────────────────
         let hasFlagged = false;
         let hasUnknown = false;
+        const evaluatedComponents = new Set();
 
-        const nonGenuineParts = itunesData.NonGenuineParts || itunesData['NonGenuineParts'] || [];
-
-        // --- FIRST LOOP: Enforce Baseline Core Components ---
         for (const component of CORE_COMPONENTS) {
-            const historyItem = historyMap.get(component);
             evaluatedComponents.add(component);
+            const historyItem = historyMap.get(component);
+            let v;
 
-            let status = Verdict.GENUINE;
-            let serial = 'N/A';
-            let message = 'Component matches factory configuration';
+            switch (component) {
+                case 'Battery':
+                    v = _batteryVerdict(effectiveBattery, historyItem, serviceHistoryData);
+                    break;
 
-            if (historyItem) {
-                serial = historyItem.SerialNumber || 'N/A';
+                case 'Display':
+                    v = _displayVerdict(deepDisplay, historyItem, nonGenuineParts);
+                    break;
 
-                // 2026 Cloud Pairing Logic
-                if (historyItem.PartStatus === 'Unknown') {
-                    status = Verdict.UNKNOWN;
-                    message = 'Non-Genuine or unrecognized aftermarket part';
-                    hasUnknown = true;
-                } else if (historyItem.PartStatus === 'Used') {
-                    status = Verdict.USED;
-                    message = 'Genuine Apple part transferred from another device';
-                } else if (historyItem.FinishRepair || historyItem.PairingStatus === 'Pending') {
-                    status = Verdict.UNPAIRED_GENUINE;
-                    message = 'Genuine part detected but Cloud Pairing is incomplete';
-                    hasFlagged = true; // Flag for vendor review, but not as counterfeit
-                } else if (historyItem.PartStatus === 'Not Detected') {
-                    status = Verdict.NOT_DETECTED;
-                    message = 'Component is completely missing or disconnected';
-                    hasFlagged = true;
-                }
-            } else {
-                // Legacy Fallback Checks
-                if (nonGenuineParts.includes(component)) {
-                    status = Verdict.UNKNOWN;
-                    message = 'Flagged in NonGenuineParts telemetry';
-                    hasUnknown = true;
-                } else {
-                    if (component === 'Logic Board' && lockdownData.MLBSerialNumber) {
-                        serial = lockdownData.MLBSerialNumber;
-                    } else if (serial === 'N/A') {
-                        serial = 'Verified Secure';
+                case 'FaceID/TouchID Biometrics':
+                    // Face ID pairing state from IORegistry
+                    v = _faceIdVerdict(deepFaceId, historyItem, componentPairing);
+                    // If Face ID is unverified/restricted, also check touch vendor
+                    if ([Verdict.UNVERIFIED, Verdict.RESTRICTED].includes(v.verdict)) {
+                        const touchV = _touchVendorVerdict(deepTouch, historyItem);
+                        if (touchV.verdict === Verdict.MISMATCH) v = touchV;
                     }
-                }
+                    break;
+
+                case 'Rear Camera':
+                    v = _cameraVerdict(deepRearCam, historyItem, 'Rear camera', componentPairing);
+                    break;
+
+                case 'Front Camera':
+                    v = _cameraVerdict(deepFrontCam, historyItem, 'Front camera', componentPairing);
+                    break;
+
+                default:
+                    v = _genericComponentVerdict(
+                        component, historyItem, nonGenuineParts,
+                        activationData, componentSerials
+                    );
             }
 
-            // Apply Deep Verification logic for specific parts
-            if (component === 'Battery') {
-                if (status === Verdict.GENUINE && batteryResult.verdict === Verdict.MISMATCH) {
-                    status = Verdict.MISMATCH;
-                    message = batteryResult.reasons.join(', ');
-                    hasFlagged = true;
-                }
-                if (batteryResult.serial) serial = batteryResult.serial;
-            } else if (component === 'Display') {
-                if (status === Verdict.GENUINE && screenResult.verdict === Verdict.MISMATCH) {
-                    status = Verdict.MISMATCH;
-                    message = screenResult.reasons.join(', ');
-                    hasFlagged = true;
-                }
-            }
-
-            // Factory manifest mismatch check for specific peripherals
-            if (component === 'Taptic Engine' || component === 'Main Speaker') {
-                const factoryKey = component === 'Taptic Engine' ? 'TapticEngineSerialNumber' : 'MainSpeakerSerialNumber';
-                const factorySerial = lockdownData[factoryKey];
-
-                if (factorySerial && serial !== 'N/A' && serial !== 'Verified Secure' && factorySerial !== serial) {
-                    status = Verdict.MISMATCH;
-                    message = `Serial mismatch against factory manifest (Expected: ${factorySerial})`;
-                    hasFlagged = true;
-                }
-            }
+            if (v.verdict === Verdict.MISMATCH || v.verdict === Verdict.NOT_DETECTED) hasFlagged = true;
+            if (v.verdict === Verdict.UNKNOWN) hasUnknown = true;
 
             result.auditTrail.push({
                 component,
-                status,
-                serial,
-                message
+                status: v.verdict,
+                serial: v.serial,
+                factorySerial: v.factorySerial,
+                message: v.message
             });
         }
 
-        // --- SECOND LOOP: Dynamically add any newly discovered parts from ServiceHistory ---
+        // ── 4. Dynamic components from ServiceHistory not in CORE_COMPONENTS ─
         for (const item of serviceHistory) {
-            if (!evaluatedComponents.has(item.Part)) {
-                let status = Verdict.GENUINE;
-                let message = 'Component matches factory configuration';
-
-                if (item.PartStatus === 'Unknown') {
-                    status = Verdict.UNKNOWN;
-                    message = 'Non-Genuine or unrecognized aftermarket part';
-                    hasUnknown = true;
-                } else if (item.PartStatus === 'Used') {
-                    status = Verdict.USED;
-                    message = 'Genuine Apple part transferred from another device';
-                } else if (item.FinishRepair || item.PairingStatus === 'Pending') {
-                    status = Verdict.UNPAIRED_GENUINE;
-                    message = 'Genuine part detected but Cloud Pairing is incomplete';
-                }
-
+            if (!evaluatedComponents.has(item.Part) && item.Part) {
+                const v = _verdictFromHistoryItem(item, null);
+                if (v.verdict === Verdict.UNKNOWN) hasUnknown = true;
                 result.auditTrail.push({
                     component: item.Part,
-                    status,
-                    serial: item.SerialNumber || 'N/A',
-                    message
+                    status: v.verdict,
+                    serial: v.serial,
+                    factorySerial: v.factorySerial,
+                    message: v.message
                 });
             }
         }
 
-        // 5. Compute overall verdict
+        // ── 5. Overall verdict ───────────────────────────────────────────────
         if (hasUnknown || hasFlagged) {
             result.overallVerdict = 'parts_flagged';
             result.overallLabel = 'Hardware Issues Detected';
+        } else if (!deepDataAvailable && serviceHistory.length === 0) {
+            // Shallow layer, no service history — genuineness unverifiable
+            result.overallVerdict = 'unverifiable';
+            result.overallLabel = 'Cannot Verify — Connect via Repair Assistant or run deep scan';
         } else {
             result.overallVerdict = 'all_genuine';
-            result.overallLabel = 'All Parts Genuine';
+            result.overallLabel = deepDataAvailable
+                ? 'All Parts Verified Genuine'
+                : 'No Issues Detected (Limited Scan)';
         }
 
         result.success = true;
-        console.log(`[AuthenticityService] Scan complete — verdict: ${result.overallVerdict}, Seal: ${result.sealStatus}`);
+        console.log(`[AuthenticityService] Scan complete — verdict: ${result.overallVerdict}, deep: ${deepDataAvailable}`);
 
     } catch (error) {
         console.error('[AuthenticityService] Authenticity scan failed:', error);
-        result.success = false;
         result.overallVerdict = 'unable_to_determine';
         result.overallLabel = `Scan Error: ${error.message}`;
     }
@@ -424,7 +652,4 @@ async function checkAuthenticity(uuid) {
     return result;
 }
 
-module.exports = {
-    checkAuthenticity,
-    Verdict
-};
+module.exports = { checkAuthenticity, Verdict };

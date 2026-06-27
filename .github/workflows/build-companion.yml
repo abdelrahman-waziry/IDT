@@ -1,0 +1,45 @@
+name: Build Companion App (iOS)
+
+on:
+  push:
+    paths:
+      - 'resources/companion_app/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Compile Swift Source
+        run: |
+          mkdir -p build/Payload/FixtechCompanion.app
+          
+          # Compile the 3 Swift files directly into an ARM64 iOS executable
+          xcrun -sdk iphoneos swiftc \
+            -target arm64-apple-ios14.0 \
+            resources/companion_app/main.swift \
+            resources/companion_app/MobileGestalt.swift \
+            resources/companion_app/HTTPServer.swift \
+            -o build/Payload/FixtechCompanion.app/FixtechCompanion
+            
+      - name: Add Info.plist
+        run: |
+          cp resources/companion_app/Info.plist build/Payload/FixtechCompanion.app/
+          
+      - name: Ad-Hoc Sign and Package
+        run: |
+          # Perform an ad-hoc signature (so the zip structure is valid, Sideloadly overrides this later)
+          codesign -s - -f --entitlements /dev/null build/Payload/FixtechCompanion.app
+          
+          # Zip into an IPA format
+          cd build
+          zip -r FixtechCompanion.ipa Payload
+          
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: FixtechCompanion.ipa
+          path: build/FixtechCompanion.ipa
