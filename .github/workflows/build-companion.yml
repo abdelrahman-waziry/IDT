@@ -32,7 +32,7 @@ jobs:
       - name: Ad-Hoc Sign and Package
         run: |
           # Perform an ad-hoc signature (so the zip structure is valid, Sideloadly overrides this later)
-          codesign -s - -f --entitlements /dev/null build/Payload/FixtechCompanion.app
+          codesign -s - -f build/Payload/FixtechCompanion.app
           
           # Zip into an IPA format
           cd build
