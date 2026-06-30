@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Compile Swift Source
         run: |
@@ -39,7 +39,7 @@ jobs:
           zip -r FixtechCompanion.ipa Payload
           
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: FixtechCompanion.ipa
           path: build/FixtechCompanion.ipa

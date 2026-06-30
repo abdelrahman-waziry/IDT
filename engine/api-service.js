@@ -11,7 +11,7 @@
  * Callers must handle failures explicitly.
  */
 
-const IMEIORG_BASE = 'https://api-client.imei.org/api';
+const IMEIORG_BASE = 'https://api-client.imei.org/api/dhru';
 const IMEIORG_SUBMIT = `${IMEIORG_BASE}/submit`;
 const IMEIORG_RESULT = `${IMEIORG_BASE}/result`;
 const IMEIORG_SERVICES = `${IMEIORG_BASE}/services`;
@@ -20,7 +20,6 @@ const TAC_FALLBACK_BASE = 'https://imeidb.xyz/api/v3';
 // Service IDs on IMEI.org
 const SERVICE = {
     APPLE_ADVANCED: 171,   // Serial, FMI, iCloud, Activated, SIM lock, Warranty — $0.15/check
-    APPLE_BLACKLIST: 30     // Carrier + GSMA blacklist — $0.05/check
 };
 
 const POLL_INTERVAL_MS = 2000;
